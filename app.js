@@ -20,9 +20,12 @@ app.use(session({
     cookie: { secure: false }
 }));
 
+const authRoutes = require('./routes/auth');
+app.use('/', authRoutes);
+
 // Ruta de prueba
 app.get('/', (req, res) => {
-    res.send('Fotaza 2 con Sequelize funcionando ✅');
+    res.send('Fotaza funcionando ✅');
 });
 
 // Sincronizar BD y arrancar servidor

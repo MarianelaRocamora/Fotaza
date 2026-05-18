@@ -1,0 +1,30 @@
+html
+  head
+    title Registro - Fotaza
+  body
+    h1 Crear cuenta
+    if error
+      p(style='color:red')= error
+    form(method='POST' action='/registro')
+      input(type='text' name='nombre' placeholder='Nombre' required)
+      br
+      input(type='text' name='apellido' placeholder='Apellido' required)
+      br
+      input(type='email' name='correo' placeholder='Correo' required)
+      br
+      input(type='password' name='contrasena' placeholder='Contraseña' required)
+      br
+      select(name='sexo')
+        option(value='') Seleccionar sexo
+        option(value='M') Masculino
+        option(value='F') Femenino
+        option(value='O') Otro
+      br
+      label Fecha de nacimiento
+      input(type='date' name='fecha_nacimiento')
+      br
+      textarea(name='bio' placeholder='Biografía (opcional)' rows='3')
+      br
+      button(type='submit') Registrarse
+    br
+    a(href='/login') ¿Ya tenés cuenta? Iniciá sesión
