@@ -1,0 +1,15 @@
+html
+  head
+    title Login - Fotaza
+  body
+    h1 Iniciar sesión
+    if error
+      p(style='color:red')= error
+    form(method='POST' action='/login')
+      input(type='email' name='correo' placeholder='Correo' required)
+      br
+      input(type='password' name='contrasena' placeholder='Contraseña' required)
+      br
+      button(type='submit') Ingresar
+    br
+    a(href='/registro') ¿No tenés cuenta? Registrate
