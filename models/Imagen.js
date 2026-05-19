@@ -25,7 +25,7 @@ const Imagen = sequelize.define('imagen', {
         defaultValue: false
     },
     texto_marca: DataTypes.STRING(200),
-    
+
     fecha_subida: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
@@ -33,7 +33,11 @@ const Imagen = sequelize.define('imagen', {
     estado: {
         type: DataTypes.STRING(20),
         defaultValue: 'activo'
-    }
+    },
+    comentario_clausurado: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+    },
 }, {
     tableName: 'imagen',
     timestamps: false

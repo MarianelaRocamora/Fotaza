@@ -24,10 +24,6 @@ const Publicacion = sequelize.define('publicacion', {
         type: DataTypes.STRING(20),
         defaultValue: 'activo'
     },
-    comentarios_abiertos: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
-    },
     id_creador: {
         type: DataTypes.INTEGER,
         allowNull: false
