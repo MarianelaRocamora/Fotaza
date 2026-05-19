@@ -11,7 +11,11 @@ router.get('/home', (req, res) => {
     if (!req.session.usuario) {
         return res.redirect('/login');
     }
-    res.render('home', { usuario: req.session.usuario });
+    res.render('home', { 
+        usuario: req.session.usuario,
+        exito: req.query.exito,
+        error: req.query.error
+    });
 });
 
 router.get('/logout', (req, res) => {

@@ -3,5 +3,11 @@ html
     title Home - Fotaza
   body
     h1 Bienvenido #{usuario.nombre}!
+    if exito
+      p(style='color:green') ✅ ¡Publicación creada exitosamente!
+    if error
+      p(style='color:red') ❌ Error al crear la publicación
     p Estás logueado correctamente
+    a(href='/publicacion/nueva') Crear nueva publicación
+    br
     a(href='/logout') Cerrar sesión

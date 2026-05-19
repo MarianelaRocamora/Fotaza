@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const sequelize = require('./db/sequelize');
 require('dotenv').config();
+require('./models/asociaciones');
 
 const app = express();
 
@@ -22,6 +23,9 @@ app.use(session({
 
 const authRoutes = require('./routes/auth');
 app.use('/', authRoutes);
+
+const publicacionRoutes = require('./routes/publicacion');
+app.use('/', publicacionRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

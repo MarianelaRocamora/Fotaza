@@ -1,0 +1,41 @@
+html
+  head
+    title Nueva Publicación - Fotaza
+  body
+    h1 Crear nueva publicación
+    if error
+      p(style='color:red')= error
+    form(method='POST' action='/publicacion/nueva' enctype='multipart/form-data')
+      div
+        input(type='text' name='titulo' placeholder='Título' required)
+      div
+        textarea(name='descripcion' placeholder='Descripción opcional' rows='3')
+      div
+        label Imágenes
+        input(type='file' name='imagenes' multiple required accept='image/*')
+      div
+        input(type='text' name='etiquetas' placeholder='Etiquetas: paisaje, naturaleza')
+      div
+        label Licencia
+        select(name='licencia' id='licencia' onchange='toggleMarca(this.value)')
+          option(value='sin_copyright') Sin copyright
+          option(value='copyright') Con copyright
+      div(id='marcaDiv' style='display:none')
+        label Marca de agua
+        select(name='marca_de_agua')
+          option(value='true') Sí
+          option(value='false') No
+        div
+          input(type='text' name='texto_marca' placeholder='Texto de la marca ej: © Maria 2026')
+      div
+        button(type='submit') Publicar
+    a(href='/home') Volver al inicio
+    script.
+      function toggleMarca(valor) {
+        var div = document.getElementById('marcaDiv');
+        if (valor === 'copyright') {
+          div.style.display = 'block';
+        } else {
+          div.style.display = 'none';
+        }
+      }

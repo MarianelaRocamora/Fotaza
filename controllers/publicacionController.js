@@ -68,7 +68,7 @@ const crearPublicacion = async (req, res) => {
             }
         }
 
-        res.redirect('/home');
+        res.redirect('/home?exito=1');
 
     } catch (error) {
         console.error(error);
