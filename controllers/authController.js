@@ -24,7 +24,7 @@ const registrar = async (req, res) => {
             estado: 'activo',
             fecha_creacion: new Date()
         });
-        res.redirect('/login');
+        res.redirect('/login?exito=1');
     } catch (error) {
         console.error(error);
         res.render('registro', { error: 'Error al registrar usuario' });
@@ -32,7 +32,10 @@ const registrar = async (req, res) => {
 };
 
 const mostrarLogin = (req, res) => {
-    res.render('login');
+    res.render('login', {
+        exito: req.query.exito,
+        error: req.query.error
+    });
 };
 
 const login = async (req, res) => {

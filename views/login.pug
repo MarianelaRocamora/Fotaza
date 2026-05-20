@@ -3,6 +3,8 @@ html
     title Login - Fotaza
   body
     h1 Iniciar sesión
+    if exito
+      p(style='color:green') ✅ ¡Usuario registrado exitosamente! Iniciá sesión.
     if error
       p(style='color:red')= error
     form(method='POST' action='/login')

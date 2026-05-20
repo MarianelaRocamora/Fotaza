@@ -21,18 +21,21 @@ app.use(session({
     cookie: { secure: false }
 }));
 
+// ─── Rutas ───────────────────────────────────────────────
 const authRoutes = require('./routes/auth');
-app.use('/', authRoutes);
-
 const publicacionRoutes = require('./routes/publicacion');
-app.use('/', publicacionRoutes);
+const votoRoutes = require('./routes/voto');
 
-// Ruta de prueba
+app.use('/', authRoutes);
+app.use('/', publicacionRoutes);
+app.use('/', votoRoutes);
+
+// ─── Ruta raíz ───────────────────────────────────────────
 app.get('/', (req, res) => {
     res.send('Fotaza funcionando ✅');
 });
 
-// Sincronizar BD y arrancar servidor
+// ─── Servidor ────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 sequelize.authenticate()
     .then(() => {

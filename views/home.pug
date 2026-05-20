@@ -3,10 +3,12 @@ html
     title Home - Fotaza
   body
     h1 Bienvenido #{usuario.nombre}!
+
     if exito
-      p(style='color:green') ✅ ¡Publicación creada exitosamente!
+      p(style='color:green') ✅ #{exito}
     if error
-      p(style='color:red') ❌ Error al crear la publicación
+      p(style='color:red') ❌ #{error}
+
     p Estás logueado correctamente
     a(href='/publicacion/nueva') Crear nueva publicación
     br
@@ -16,12 +18,20 @@ html
 
     h2 ⭐ Destacadas
     if destacadas && destacadas.length > 0
-      div
-        each pub in destacadas
-          div(style='border:1px solid #ccc; margin:10px; padding:10px')
-            h3= pub.titulo
-            img(src=pub.foto width='200')
-            p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+      each pub in destacadas
+        div(style='border:1px solid #ccc; margin:10px; padding:10px')
+          h3= pub.titulo
+          img(src=pub.foto width='200')
+          p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+          form(method='POST' action='/votar')
+            input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            select(name='valoracion')
+              option(value='1') 1 ⭐
+              option(value='2') 2 ⭐
+              option(value='3') 3 ⭐
+              option(value='4') 4 ⭐
+              option(value='5') 5 ⭐
+            button(type='submit') Votar
     else
       p Aún no hay publicaciones destacadas.
 
@@ -29,12 +39,20 @@ html
 
     h2 🕐 Recientes
     if recientes && recientes.length > 0
-      div
-        each pub in recientes
-          div(style='border:1px solid #ccc; margin:10px; padding:10px')
-            h3= pub.titulo
-            img(src=pub.foto width='200')
-            p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+      each pub in recientes
+        div(style='border:1px solid #ccc; margin:10px; padding:10px')
+          h3= pub.titulo
+          img(src=pub.foto width='200')
+          p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+          form(method='POST' action='/votar')
+            input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            select(name='valoracion')
+              option(value='1') 1 ⭐
+              option(value='2') 2 ⭐
+              option(value='3') 3 ⭐
+              option(value='4') 4 ⭐
+              option(value='5') 5 ⭐
+            button(type='submit') Votar
     else
       p Aún no hay publicaciones recientes.
 
@@ -42,11 +60,19 @@ html
 
     h2 🔍 Descubrí más
     if descubri && descubri.length > 0
-      div
-        each pub in descubri
-          div(style='border:1px solid #ccc; margin:10px; padding:10px')
-            h3= pub.titulo
-            img(src=pub.foto width='200')
-            p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+      each pub in descubri
+        div(style='border:1px solid #ccc; margin:10px; padding:10px')
+          h3= pub.titulo
+          img(src=pub.foto width='200')
+          p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+          form(method='POST' action='/votar')
+            input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            select(name='valoracion')
+              option(value='1') 1 ⭐
+              option(value='2') 2 ⭐
+              option(value='3') 3 ⭐
+              option(value='4') 4 ⭐
+              option(value='5') 5 ⭐
+            button(type='submit') Votar
     else
       p Aún no hay publicaciones para descubrir.

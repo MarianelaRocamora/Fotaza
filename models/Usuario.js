@@ -47,7 +47,12 @@ const Usuario = sequelize.define('usuario', {
     }
 }, {
     tableName: 'usuario',
-    timestamps: false
+    timestamps: true,      // activa createdAt y updatedAt
+    paranoid: true,        // activa deletedAt (soft delete)
+    createdAt: 'fecha_creacion',  // usa tu columna existente
+    updatedAt: false,      // no necesitamos updatedAt
+    deletedAt: 'fecha_baja'       // nombre de la columna en la BD
+
 });
 
 module.exports = Usuario;
