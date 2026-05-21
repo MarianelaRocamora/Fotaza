@@ -25,10 +25,15 @@ app.use(session({
 const authRoutes = require('./routes/auth');
 const publicacionRoutes = require('./routes/publicacion');
 const votoRoutes = require('./routes/voto');
+const comentarioRoutes = require('./routes/comentario');
+const { manejarErrorMulter } = require('./controllers/publicacionController');
+
 
 app.use('/', authRoutes);
 app.use('/', publicacionRoutes);
 app.use('/', votoRoutes);
+app.use('/', comentarioRoutes);
+app.use(manejarErrorMulter);
 
 // ─── Ruta raíz ───────────────────────────────────────────
 app.get('/', (req, res) => {

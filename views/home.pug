@@ -21,8 +21,9 @@ html
       each pub in destacadas
         div(style='border:1px solid #ccc; margin:10px; padding:10px')
           h3= pub.titulo
-          img(src=pub.foto width='200')
-          p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+          if pub.foto
+            img(src=pub.foto width='200')
+          p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
             select(name='valoracion')
@@ -32,6 +33,22 @@ html
               option(value='4') 4 ⭐
               option(value='5') 5 ⭐
             button(type='submit') Votar
+          hr
+          h4 Comentarios
+          if pub.comentarios && pub.comentarios.length > 0
+            each c in pub.comentarios
+              div(style='margin:5px 0; padding:5px; background:#f9f9f9')
+                p
+                  strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                  |  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                p= c.texto
+          else
+            p Sé el primero en comentar.
+          form(method='POST' action='/comentar')
+            input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
+            br
+            button(type='submit') Comentar
     else
       p Aún no hay publicaciones destacadas.
 
@@ -42,8 +59,9 @@ html
       each pub in recientes
         div(style='border:1px solid #ccc; margin:10px; padding:10px')
           h3= pub.titulo
-          img(src=pub.foto width='200')
-          p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+          if pub.foto
+            img(src=pub.foto width='200')
+          p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
             select(name='valoracion')
@@ -53,6 +71,22 @@ html
               option(value='4') 4 ⭐
               option(value='5') 5 ⭐
             button(type='submit') Votar
+          hr
+          h4 Comentarios
+          if pub.comentarios && pub.comentarios.length > 0
+            each c in pub.comentarios
+              div(style='margin:5px 0; padding:5px; background:#f9f9f9')
+                p
+                  strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                  |  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                p= c.texto
+          else
+            p Sé el primero en comentar.
+          form(method='POST' action='/comentar')
+            input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
+            br
+            button(type='submit') Comentar
     else
       p Aún no hay publicaciones recientes.
 
@@ -63,8 +97,9 @@ html
       each pub in descubri
         div(style='border:1px solid #ccc; margin:10px; padding:10px')
           h3= pub.titulo
-          img(src=pub.foto width='200')
-          p Promedio: #{parseFloat(pub.promedio).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+          if pub.foto
+            img(src=pub.foto width='200')
+          p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
             select(name='valoracion')
@@ -74,5 +109,22 @@ html
               option(value='4') 4 ⭐
               option(value='5') 5 ⭐
             button(type='submit') Votar
+          hr
+          h4 Comentarios
+          if pub.comentarios && pub.comentarios.length > 0
+            each c in pub.comentarios
+              div(style='margin:5px 0; padding:5px; background:#f9f9f9')
+                p
+                  strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                  |  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                p= c.texto
+          else
+            p Sé el primero en comentar.
+            form(method='POST' action='/comentar')
+            input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
+            br
+            button(type='submit') Comentar
+          
     else
       p Aún no hay publicaciones para descubrir.

@@ -1,5 +1,9 @@
 const Usuario = require('../models/Usuario');
 const bcrypt = require('bcrypt');
+const { QueryTypes } = require('sequelize');
+const sequelize = require('../db/sequelize');
+const Comentario = require('../models/Comentario');
+const Usuario2 = require('../models/Usuario');
 
 const mostrarRegistro = (req, res) => {
     res.render('registro');
@@ -61,4 +65,74 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { mostrarRegistro, registrar, mostrarLogin, login };
+// ─── Helper: agrega comentarios a cada publicación ──────
+const agregarComentarios = async (pubs) => {
+    if (!pubs.length) return pubs;
+
+    const idImagenes = pubs.map(p => p.id_imagen);
+    const comentarios = await Comentario.findAll({
+        where: { id_imagen: idImagenes, estado: 'activo' },
+        include: [{ model: Usuario2, as: 'comentador', attributes: ['nombre'] }],
+        order: [['fecha_comentario', 'ASC']]
+    });
+
+    return pubs.map(pub => ({
+        ...pub,
+        comentarios: comentarios.filter(c => c.id_imagen === pub.id_imagen)
+    }));
+};
+
+// ─── Helper: query base del home ────────────────────────
+const queryHome = async (orden, having = '') => {
+    const pubs = await sequelize.query(`
+        SELECT p.id_publicacion, p.titulo, i.id_imagen, i.foto,
+               i.comentario_clausurado,
+               COALESCE(AVG(v.valoracion), 0) AS promedio,
+               COUNT(v.id_voto) AS total_votos
+        FROM publicacion p
+        JOIN publicacion_imagen pi ON p.id_publicacion = pi.id_publicacion
+        JOIN imagen i ON pi.id_imagen = i.id_imagen
+        LEFT JOIN voto v ON i.id_imagen = v.id_imagen
+        WHERE p.estado = 'activo'
+        GROUP BY p.id_publicacion, i.id_imagen
+        ${having}
+        ORDER BY ${orden}
+        LIMIT 10
+    `, { type: QueryTypes.SELECT });
+
+    return agregarComentarios(pubs);
+};
+
+// ─── Home ────────────────────────────────────────────────
+const home = async (req, res) => {
+    if (!req.session.usuario) return res.redirect('/login');
+
+    try {
+        const destacadas = await queryHome(
+            'promedio DESC',
+            'HAVING AVG(v.valoracion) >= 4 AND COUNT(v.id_voto) >= 5'
+        );
+        const recientes = await queryHome('p.fecha_publicacion DESC');
+        const descubri  = await queryHome('RANDOM()');
+
+        res.render('home', {
+            usuario: req.session.usuario,
+            exito: req.query.exito,
+            error: req.query.error,
+            destacadas,
+            recientes,
+            descubri
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.render('home', { usuario: req.session.usuario });
+    }
+};
+
+const logout = (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+};
+
+module.exports = { mostrarRegistro, registrar, mostrarLogin, login, home, logout };
