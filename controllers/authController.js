@@ -72,20 +72,20 @@ const agregarComentarios = async (pubs) => {
     const idImagenes = pubs.map(p => p.id_imagen);
     const comentarios = await Comentario.findAll({
         where: { id_imagen: idImagenes, estado: 'activo' },
-        include: [{ model: Usuario2, as: 'comentador', attributes: ['nombre'] }],
+        include: [{ model: Usuario, as: 'comentador', attributes: ['nombre'] }],
         order: [['fecha_comentario', 'ASC']]
     });
 
     return pubs.map(pub => ({
         ...pub,
-        comentarios: comentarios.filter(c => c.id_imagen === pub.id_imagen)
+        comentarios: comentarios.filter(c => parseInt(c.id_imagen, 10) === parseInt(pub.id_imagen, 10))
     }));
 };
 
 // ─── Helper: query base del home ────────────────────────
 const queryHome = async (orden, having = '') => {
     const pubs = await sequelize.query(`
-        SELECT p.id_publicacion, p.titulo, i.id_imagen, i.foto,
+        SELECT p.id_publicacion, p.titulo,p.descripcion ,i.id_imagen, i.foto,
                i.comentario_clausurado,
                COALESCE(AVG(v.valoracion), 0) AS promedio,
                COUNT(v.id_voto) AS total_votos

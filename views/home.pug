@@ -23,6 +23,8 @@ html
           h3= pub.titulo
           if pub.foto
             img(src=pub.foto width='200')
+          if pub.descripcion
+            p= pub.descripcion
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
@@ -61,6 +63,8 @@ html
           h3= pub.titulo
           if pub.foto
             img(src=pub.foto width='200')
+          if pub.descripcion
+            p= pub.descripcion
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
@@ -99,6 +103,8 @@ html
           h3= pub.titulo
           if pub.foto
             img(src=pub.foto width='200')
+          if pub.descripcion
+            p= pub.descripcion
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
