@@ -4,7 +4,8 @@ const Imagen = require('../models/Imagen');
 const comentar = async (req, res) => {
     if (!req.session.usuario) return res.redirect('/login');
 
-    const { texto, id_imagen } = req.body;
+    const { texto, id_imagen , redirect_to } = req.body;
+    console.log('redirect_to:', redirect_to);
     const id_comentador = parseInt(req.session.usuario.id, 10);
     const idImagen = parseInt(id_imagen, 10);
 
@@ -16,11 +17,11 @@ const comentar = async (req, res) => {
         const imagen = await Imagen.findByPk(idImagen);
 
         if (!imagen) {
-            return res.redirect('/home?error=Imagen no encontrada');
+            return res.redirect(`${redirect_to || '/home'}?error=Imagen no encontrada`);
         }
 
         if (imagen.comentario_clausurado) {
-            return res.redirect('/home?error=Los comentarios están cerrados para esta imagen');
+            return res.redirect(`${redirect_to || '/home'}?error=Los comentarios están cerrados`);
         }
 
         await Comentario.create({
@@ -29,11 +30,11 @@ const comentar = async (req, res) => {
             id_imagen: idImagen
         });
 
-        res.redirect('/home?exito=Comentario publicado');
+        res.redirect(`${redirect_to || '/home'}?exito=Comentario publicado`);
 
     } catch (error) {
         console.error(error);
-        res.redirect('/home?error=Error al comentar');
+        res.redirect(`${redirect_to || '/home'}?error=Error al comentar`);
     }
 };
 

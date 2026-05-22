@@ -4,10 +4,27 @@ const Etiqueta = require('./Etiqueta');
 const Imagen = require('./Imagen');
 const Voto = require('./Voto');
 const Comentario = require('./Comentario');
+const UsuarioSeguidor = require('./UsuarioSeguidor');
 
 // ─── Usuario ────────────────────────────────────────────
 Publicacion.belongsTo(Usuario, { foreignKey: 'id_creador', as: 'creador' });
 Usuario.hasMany(Publicacion, { foreignKey: 'id_creador', as: 'publicaciones' });
+
+// Usuario: relación de seguidores/seguidos entre usuarios.
+Usuario.belongsToMany(Usuario, {
+    through: UsuarioSeguidor,
+    foreignKey: 'id_seguidor',
+    otherKey: 'id_usuario',
+    as: 'seguidos'
+});
+
+Usuario.belongsToMany(Usuario, {
+    through: UsuarioSeguidor,
+    foreignKey: 'id_usuario',
+    otherKey: 'id_seguidor',
+    as: 'seguidores'
+});
+
 
 // ─── Etiquetas ──────────────────────────────────────────
 Publicacion.belongsToMany(Etiqueta, {

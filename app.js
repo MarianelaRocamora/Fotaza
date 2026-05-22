@@ -7,13 +7,14 @@ require('./models/asociaciones');
 
 const app = express();
 
+// ─── Motor de vistas ─────────────────────────────────────
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
+// ─── Middlewares ─────────────────────────────────────────
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(session({
     secret: process.env.SESSION_SECRET || 'fotaza2secret',
     resave: false,
@@ -22,17 +23,18 @@ app.use(session({
 }));
 
 // ─── Rutas ───────────────────────────────────────────────
-const authRoutes = require('./routes/auth');
+const authRoutes       = require('./routes/auth');
 const publicacionRoutes = require('./routes/publicacion');
-const votoRoutes = require('./routes/voto');
+const votoRoutes       = require('./routes/voto');
 const comentarioRoutes = require('./routes/comentario');
+const perfilRoutes     = require('./routes/perfil');
 const { manejarErrorMulter } = require('./controllers/publicacionController');
-
 
 app.use('/', authRoutes);
 app.use('/', publicacionRoutes);
 app.use('/', votoRoutes);
 app.use('/', comentarioRoutes);
+app.use('/', perfilRoutes);
 app.use(manejarErrorMulter);
 
 // ─── Ruta raíz ───────────────────────────────────────────

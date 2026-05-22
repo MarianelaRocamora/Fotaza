@@ -1,0 +1,58 @@
+html
+  head
+    title Perfil - #{perfil.nombre}
+  body
+    a(href='/home') ← Volver al inicio
+
+    if exito
+      p(style='color:green') ✅ #{exito}
+    if error
+      p(style='color:red') ❌ #{error}
+
+    h1 Perfil de #{perfil.nombre} #{perfil.apellido}
+    if perfil.bio
+      p= perfil.bio
+
+    p Seguidores: #{totalSeguidores} · Siguiendo: #{totalSeguidos}
+
+    if !esPropioPerfil
+      if yaSigue
+        form(method='POST' action=`/perfil/${perfil.id_usuario}/dejar-de-seguir`)
+          button(type='submit') Dejar de seguir
+      else
+        form(method='POST' action=`/perfil/${perfil.id_usuario}/seguir`)
+          button(type='submit') Seguir
+
+    hr
+    h2 Publicaciones de #{perfil.nombre}
+
+    if publicaciones && publicaciones.length > 0
+      each pub in publicaciones
+        div(style='border:1px solid #ccc; margin:10px; padding:10px')
+          h3= pub.titulo
+          if pub.foto
+            img(src=pub.foto width='200')
+          if pub.descripcion
+            p= pub.descripcion
+          p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
+          hr
+          h4 Comentarios
+          if pub.comentarios && pub.comentarios.length > 0
+            each c in pub.comentarios
+              div(style='margin:5px 0; padding:5px; background:#f9f9f9')
+                p
+                  strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                  |  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                p= c.texto
+          else
+            p Sé el primero en comentar.
+          form(method='POST' action='/comentar')
+            input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            input(type='hidden' name='redirect_to' value=`/perfil/${perfil.id_usuario}`)
+            textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
+            br
+            button(type='submit') Comentar
+          if esPropioPerfil
+            a(href=`/publicacion/${pub.id_publicacion}/editar`) Editar
+    else
+      p Este usuario aún no tiene publicaciones.

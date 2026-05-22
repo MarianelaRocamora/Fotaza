@@ -28,6 +28,7 @@ html
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            input(type='hidden' name='redirect_to' value='/home')
             select(name='valoracion')
               option(value='1') 1 ⭐
               option(value='2') 2 ⭐
@@ -48,11 +49,12 @@ html
             p Sé el primero en comentar.
           form(method='POST' action='/comentar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            input(type='hidden' name='redirect_to' value='/home')
             textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
             br
             button(type='submit') Comentar
     else
-      p Aún no hay publicaciones destacadas.
+      p Aún no hay publicaciones para descubrir.
 
     hr
 
@@ -68,6 +70,7 @@ html
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            input(type='hidden' name='redirect_to' value='/home')
             select(name='valoracion')
               option(value='1') 1 ⭐
               option(value='2') 2 ⭐
@@ -88,6 +91,7 @@ html
             p Sé el primero en comentar.
           form(method='POST' action='/comentar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            input(type='hidden' name='redirect_to' value='/home')
             textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
             br
             button(type='submit') Comentar
@@ -108,6 +112,7 @@ html
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            input(type='hidden' name='redirect_to' value='/home')
             select(name='valoracion')
               option(value='1') 1 ⭐
               option(value='2') 2 ⭐
@@ -128,6 +133,7 @@ html
             p Sé el primero en comentar.
             form(method='POST' action='/comentar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
+            input(type='hidden' name='redirect_to' value='/home')
             textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
             br
             button(type='submit') Comentar
