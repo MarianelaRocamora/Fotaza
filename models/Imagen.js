@@ -38,6 +38,10 @@ const Imagen = sequelize.define('imagen', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
     },
+    id_publicacion: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
 }, {
     tableName: 'imagen',
     timestamps: false

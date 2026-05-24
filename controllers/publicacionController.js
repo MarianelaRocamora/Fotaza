@@ -76,22 +76,17 @@ const crearPublicacion = async (req, res) => {
         // Guardar cada imagen subida
         for (const file of req.files) {
             const metadata = await sharp(file.path).metadata();
-            const imagen = await Imagen.create({
+            await Imagen.create({
                 foto: '/uploads/' + file.filename,
-                ancho: metadata.width,      
+                ancho: metadata.width,
                 altura: metadata.height,
                 licencia: licencia || 'sin_copyright',
                 marca_de_agua: marca_de_agua === 'true',
-                texto_marca: texto_marca || null
+                texto_marca: texto_marca || null,
+                id_publicacion: publicacion.id_publicacion
             });
-
-            // Asociar imagen a publicacion
-            await sequelize.query(
-                'INSERT INTO publicacion_imagen (id_publicacion, id_imagen) VALUES (:pub, :img)',
-                { replacements: { pub: publicacion.id_publicacion, img: imagen.id_imagen } }
-            );
         }
-
+            
         // Guardar etiquetas
         if (etiquetas) {
             const tags = etiquetas.split(',').map(t => t.trim().toLowerCase());
@@ -102,7 +97,7 @@ const crearPublicacion = async (req, res) => {
                 await sequelize.query(
                     'INSERT INTO publicacion_etiqueta (id_publicacion, id_etiqueta) VALUES (:pub, :etiq)',
                     { replacements: { pub: publicacion.id_publicacion, etiq: etiqueta.id_etiqueta } }
-                );
+                );    
             }
         }
 

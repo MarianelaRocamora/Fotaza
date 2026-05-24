@@ -44,8 +44,7 @@ const verPerfil = async (req, res) => {
                 COALESCE(AVG(v.valoracion), 0) AS promedio,
                 COUNT(v.id_voto) AS total_votos
             FROM publicacion p
-            JOIN publicacion_imagen pi ON p.id_publicacion = pi.id_publicacion
-            JOIN imagen i ON pi.id_imagen = i.id_imagen
+            JOIN imagen i ON i.id_publicacion = p.id_publicacion
             LEFT JOIN voto v ON i.id_imagen = v.id_imagen
             WHERE p.id_creador = :idPerfil AND p.estado = 'activo'
             GROUP BY p.id_publicacion, i.id_imagen

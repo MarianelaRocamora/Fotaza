@@ -16,7 +16,7 @@ const votar = async (req, res) => {
             JOIN publicacion_imagen pi ON p.id_publicacion = pi.id_publicacion
             WHERE pi.id_imagen = :id_imagen
         `, {
-            replacements: { id_imagen },
+            replacements: { id_imagen: idImagen },
             type: sequelize.QueryTypes.SELECT
         });
 

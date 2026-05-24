@@ -10,22 +10,6 @@ const UsuarioSeguidor = require('./UsuarioSeguidor');
 Publicacion.belongsTo(Usuario, { foreignKey: 'id_creador', as: 'creador' });
 Usuario.hasMany(Publicacion, { foreignKey: 'id_creador', as: 'publicaciones' });
 
-// Usuario: relación de seguidores/seguidos entre usuarios.
-Usuario.belongsToMany(Usuario, {
-    through: UsuarioSeguidor,
-    foreignKey: 'id_seguidor',
-    otherKey: 'id_usuario',
-    as: 'seguidos'
-});
-
-Usuario.belongsToMany(Usuario, {
-    through: UsuarioSeguidor,
-    foreignKey: 'id_usuario',
-    otherKey: 'id_seguidor',
-    as: 'seguidores'
-});
-
-
 // ─── Etiquetas ──────────────────────────────────────────
 Publicacion.belongsToMany(Etiqueta, {
     through: 'publicacion_etiqueta',
@@ -39,16 +23,8 @@ Etiqueta.belongsToMany(Publicacion, {
 });
 
 // ─── Imágenes ───────────────────────────────────────────
-Publicacion.belongsToMany(Imagen, {
-    through: 'publicacion_imagen',
-    foreignKey: 'id_publicacion',
-    as: 'imagenes'
-});
-Imagen.belongsToMany(Publicacion, {
-    through: 'publicacion_imagen',
-    foreignKey: 'id_imagen',
-    as: 'publicaciones'
-});
+Publicacion.hasMany(Imagen, { foreignKey: 'id_publicacion', as: 'imagenes' });
+Imagen.belongsTo(Publicacion, { foreignKey: 'id_publicacion' });
 
 // ─── Votos ──────────────────────────────────────────────
 Voto.belongsTo(Imagen, { foreignKey: 'id_imagen' });
@@ -59,3 +35,17 @@ Imagen.hasMany(Voto, { foreignKey: 'id_imagen', as: 'votos' });
 Comentario.belongsTo(Usuario, { foreignKey: 'id_comentador', as: 'comentador' });
 Comentario.belongsTo(Imagen, { foreignKey: 'id_imagen' });
 Imagen.hasMany(Comentario, { foreignKey: 'id_imagen', as: 'comentarios' });
+
+// ─── Seguidores ─────────────────────────────────────────
+Usuario.belongsToMany(Usuario, {
+    through: UsuarioSeguidor,
+    foreignKey: 'id_seguidor',
+    otherKey: 'id_usuario',
+    as: 'seguidos'
+});
+Usuario.belongsToMany(Usuario, {
+    through: UsuarioSeguidor,
+    foreignKey: 'id_usuario',
+    otherKey: 'id_seguidor',
+    as: 'seguidores'
+});
