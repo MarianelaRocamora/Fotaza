@@ -29,7 +29,10 @@ const votoRoutes       = require('./routes/voto');
 const comentarioRoutes = require('./routes/comentario');
 const perfilRoutes     = require('./routes/perfil');
 const { manejarErrorMulter } = require('./controllers/publicacionController');
+const busquedaRoutes = require('./routes/busqueda');
 
+
+app.use('/', busquedaRoutes);
 app.use('/', authRoutes);
 app.use('/', publicacionRoutes);
 app.use('/', votoRoutes);

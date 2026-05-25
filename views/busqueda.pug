@@ -1,0 +1,57 @@
+html
+  head
+    title Buscador - Fotaza
+  body
+    a(href='/home') ← Volver al inicio
+    h1 🔍 Buscador de publicaciones
+
+    if error
+      p(style='color:red') ❌ #{error}
+
+    form(method='GET' action='/buscar')
+      div
+        input(type='text' name='q' placeholder='Título de publicación' value=filtros.q || '')
+      div
+        input(type='text' name='etiqueta' placeholder='Etiqueta' value=filtros.etiqueta || '')
+      div
+        input(type='text' name='autor' placeholder='Nombre del autor' value=filtros.autor || '')
+      div
+        label Licencia
+        select(name='licencia')
+          option(value='') Todas
+          option(value='sin_copyright' selected=filtros.licencia === 'sin_copyright') Sin copyright
+          option(value='copyright' selected=filtros.licencia === 'copyright') Con copyright
+      div
+        label Valoración mínima
+        select(name='valoracion_min')
+          option(value='' selected=!filtros.valoracion_min) Cualquiera
+          option(value='1' selected=filtros.valoracion_min === '1') ⭐ 1+
+          option(value='2' selected=filtros.valoracion_min === '2') ⭐⭐ 2+
+          option(value='3' selected=filtros.valoracion_min === '3') ⭐⭐⭐ 3+
+          option(value='4' selected=filtros.valoracion_min === '4') ⭐⭐⭐⭐ 4+
+      div
+        button(type='submit') Buscar
+
+    hr
+
+    if resultados && resultados.length > 0
+      p Se encontraron #{resultados.length} resultado(s)
+      each pub in resultados
+        div(style='border:1px solid #ccc; margin:10px; padding:10px')
+          h3= pub.titulo
+          if pub.foto
+            img(src=pub.foto width='200')
+          if pub.descripcion
+            p= pub.descripcion
+          p
+            | Autor: 
+            a(href=`/perfil/${pub.id_usuario}`) #{pub.nombre_autor} #{pub.apellido_autor}
+          p Licencia: #{pub.licencia}
+          if pub.etiquetas
+            p Etiquetas: #{pub.etiquetas}
+          p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+    else
+      if filtros.q || filtros.etiqueta || filtros.autor || filtros.licencia || filtros.valoracion_min
+        p No se encontraron resultados.
+      else
+        p Ingresá algún filtro para buscar.

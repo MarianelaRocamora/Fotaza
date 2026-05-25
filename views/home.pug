@@ -11,6 +11,7 @@ html
 
     p Estás logueado correctamente
     a(href='/publicacion/nueva') Crear nueva publicación
+    a(href='/buscar') 🔍 Buscar publicaciones
     br
     a(href='/logout') Cerrar sesión
 
@@ -25,6 +26,10 @@ html
             img(src=pub.foto width='200')
           if pub.descripcion
             p= pub.descripcion
+          if pub.etiquetas
+            p
+              | 🏷️ 
+              = pub.etiquetas
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
@@ -67,6 +72,10 @@ html
             img(src=pub.foto width='200')
           if pub.descripcion
             p= pub.descripcion
+          if pub.etiquetas
+            p
+              | 🏷️ 
+              = pub.etiquetas
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
@@ -109,6 +118,10 @@ html
             img(src=pub.foto width='200')
           if pub.descripcion
             p= pub.descripcion
+          if pub.etiquetas
+            p
+              | 🏷️ 
+              = pub.etiquetas
           p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
           form(method='POST' action='/votar')
             input(type='hidden' name='id_imagen' value=pub.id_imagen)
