@@ -40,7 +40,7 @@ const verPerfil = async (req, res) => {
         // Publicaciones del usuario con sus imágenes
         let publicaciones = await sequelize.query(`
             SELECT p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion,
-                i.id_imagen, i.foto,
+                i.id_imagen, i.foto, i.comentario_clausurado,
                 COALESCE(AVG(v.valoracion), 0) AS promedio,
                 COUNT(v.id_voto) AS total_votos,
                 STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas

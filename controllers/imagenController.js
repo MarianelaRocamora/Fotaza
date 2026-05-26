@@ -15,12 +15,15 @@ const cerrarComentarios = async (req, res) => {
                 where: { id_creador: idUsuario }
             }]
         });
-
+        
         if (!imagen) {
             return res.redirect('/home?error=No tenés permiso para hacer esto');
         }
 
-        await imagen.update({ comentario_clausurado: true });
+        await Imagen.update(
+        { comentario_clausurado: true },
+        { where: { id_imagen: idImagen } }
+        );
         res.redirect(`/perfil/${idUsuario}?exito=Comentarios cerrados`);
 
     } catch (error) {

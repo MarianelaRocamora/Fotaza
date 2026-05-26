@@ -32,8 +32,17 @@ block content
                   option(value='4') 4 ⭐
                   option(value='5') 5 ⭐
                 button.btn.btn-sm.btn-outline-warning(type='submit') Votar
-            .card-footer
-              h6 💬 Comentarios
+          .card-footer
+            h6 💬 Comentarios
+            if pub.comentario_clausurado
+              p.text-muted.small 🔒 Comentarios cerrados.
+              if pub.comentarios && pub.comentarios.length > 0
+                each c in pub.comentarios
+                  .mb-1.p-2.bg-light.rounded
+                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                    span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                    p.mb-0.small= c.texto
+            else
               if pub.comentarios && pub.comentarios.length > 0
                 each c in pub.comentarios
                   .mb-1.p-2.bg-light.rounded
@@ -84,8 +93,17 @@ block content
                   option(value='4') 4 ⭐
                   option(value='5') 5 ⭐
                 button.btn.btn-sm.btn-outline-warning(type='submit') Votar
-            .card-footer
-              h6 💬 Comentarios
+          .card-footer
+            h6 💬 Comentarios
+            if pub.comentario_clausurado
+              p.text-muted.small 🔒 Comentarios cerrados.
+              if pub.comentarios && pub.comentarios.length > 0
+                each c in pub.comentarios
+                  .mb-1.p-2.bg-light.rounded
+                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                    span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                    p.mb-0.small= c.texto
+            else
               if pub.comentarios && pub.comentarios.length > 0
                 each c in pub.comentarios
                   .mb-1.p-2.bg-light.rounded
