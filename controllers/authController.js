@@ -85,18 +85,20 @@ const agregarComentarios = async (pubs) => {
 // ─── Helper: query base del home ────────────────────────
 const queryHome = async (orden, having = '') => {
     const pubs = await sequelize.query(`
-        SELECT p.id_publicacion, p.titulo,p.descripcion ,i.id_imagen, i.foto,
-               i.comentario_clausurado,
+        SELECT p.id_publicacion, p.titulo, p.descripcion, 
+               i.id_imagen, i.foto, i.comentario_clausurado,
+               u.id_usuario, u.nombre AS nombre_autor, u.apellido AS apellido_autor,
                COALESCE(AVG(v.valoracion), 0) AS promedio,
                COUNT(v.id_voto) AS total_votos,
                STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
         FROM publicacion p
+        JOIN usuario u ON p.id_creador = u.id_usuario
         JOIN imagen i ON i.id_publicacion = p.id_publicacion
         LEFT JOIN voto v ON i.id_imagen = v.id_imagen
         LEFT JOIN publicacion_etiqueta pe ON pe.id_publicacion = p.id_publicacion
         LEFT JOIN etiqueta e ON e.id_etiqueta = pe.id_etiqueta
         WHERE p.estado = 'activo'
-        GROUP BY p.id_publicacion, i.id_imagen
+        GROUP BY p.id_publicacion, i.id_imagen, u.id_usuario, u.nombre, u.apellido
         ${having}
         ORDER BY ${orden}
         LIMIT 10

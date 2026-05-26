@@ -42,7 +42,7 @@ const verPerfil = async (req, res) => {
             SELECT p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion,
                 i.id_imagen, i.foto,
                 COALESCE(AVG(v.valoracion), 0) AS promedio,
-                COUNT(v.id_voto) AS total_votos
+                COUNT(v.id_voto) AS total_votos,
                 STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
             FROM publicacion p
             JOIN imagen i ON i.id_publicacion = p.id_publicacion
