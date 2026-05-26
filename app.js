@@ -30,8 +30,10 @@ const comentarioRoutes = require('./routes/comentario');
 const perfilRoutes     = require('./routes/perfil');
 const { manejarErrorMulter } = require('./controllers/publicacionController');
 const busquedaRoutes = require('./routes/busqueda');
+const imagenRoutes = require('./routes/imagen');
 
 
+app.use('/', imagenRoutes);
 app.use('/', busquedaRoutes);
 app.use('/', authRoutes);
 app.use('/', publicacionRoutes);

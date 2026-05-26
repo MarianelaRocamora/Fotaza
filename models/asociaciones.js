@@ -24,7 +24,7 @@ Etiqueta.belongsToMany(Publicacion, {
 
 // ─── Imágenes ───────────────────────────────────────────
 Publicacion.hasMany(Imagen, { foreignKey: 'id_publicacion', as: 'imagenes' });
-Imagen.belongsTo(Publicacion, { foreignKey: 'id_publicacion' });
+Imagen.belongsTo(Publicacion, { foreignKey: 'id_publicacion', as: 'publicacion' });
 
 // ─── Votos ──────────────────────────────────────────────
 Voto.belongsTo(Imagen, { foreignKey: 'id_imagen' });
