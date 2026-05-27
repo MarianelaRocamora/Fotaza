@@ -1,6 +1,64 @@
 extends layout
 
 block content
+  if siguiendo && siguiendo.length > 0
+    h2.mb-4 👥 Publicaciones de usuarios que sigo
+    .row.row-cols-1.row-cols-md-3.g-4.mb-5
+      each pub in siguiendo
+        .col
+          .card.pub-card.h-100
+            img.card-img-top(src=pub.foto alt=pub.titulo)
+            .card-body
+              h5.card-title= pub.titulo
+              p.small.text-muted
+                i.bi.bi-person
+                |  
+                a(href=`/perfil/${pub.id_usuario}`) #{pub.nombre_autor} #{pub.apellido_autor}
+              if pub.descripcion
+                p.card-text.text-muted.small= pub.descripcion
+              if pub.etiquetas
+                p.small
+                  i.bi.bi-tags
+                  |  #{pub.etiquetas}
+              .d-flex.align-items-center.gap-2.mb-2
+                span.badge.bg-warning.text-dark ⭐ #{parseFloat(pub.promedio || 0).toFixed(1)}
+                span.text-muted.small (#{pub.total_votos || 0} votos)
+              form.d-flex.gap-2(method='POST' action='/votar')
+                input(type='hidden' name='id_imagen' value=pub.id_imagen)
+                select.form-select.form-select-sm(name='valoracion' style='width:80px')
+                  option(value='1') 1 ⭐
+                  option(value='2') 2 ⭐
+                  option(value='3') 3 ⭐
+                  option(value='4') 4 ⭐
+                  option(value='5') 5 ⭐
+                button.btn.btn-sm.btn-outline-warning(type='submit') Votar
+            .card-footer
+              h6 💬 Comentarios
+              if pub.comentario_clausurado
+                p.text-muted.small 🔒 Comentarios cerrados.
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
+              else
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
+                else
+                  p.text-muted.small Sé el primero en comentar.
+                form.mt-2(method='POST' action='/comentar')
+                  input(type='hidden' name='id_imagen' value=pub.id_imagen)
+                  input(type='hidden' name='redirect_to' value='/home')
+                  .input-group.input-group-sm
+                    input.form-control(type='text' name='texto' placeholder='Escribí un comentario...' required)
+                    button.btn.btn-outline-secondary(type='submit') Comentar
+    hr
+
   h2.mb-4 ⭐ Destacadas
   if destacadas && destacadas.length > 0
     .row.row-cols-1.row-cols-md-3.g-4.mb-5

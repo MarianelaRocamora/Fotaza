@@ -119,13 +119,39 @@ const home = async (req, res) => {
         const recientes = await queryHome('p.fecha_publicacion DESC');
         const descubri  = await queryHome('RANDOM()');
 
+         // ─── Publicaciones de usuarios que sigo ──────────
+        let siguiendo = await sequelize.query(`
+            SELECT p.id_publicacion, p.titulo, p.descripcion,
+                   i.id_imagen, i.foto, i.comentario_clausurado,
+                   u.id_usuario, u.nombre AS nombre_autor, u.apellido AS apellido_autor,
+                   COALESCE(AVG(v.valoracion), 0) AS promedio,
+                   COUNT(DISTINCT v.id_voto) AS total_votos,
+                   STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
+            FROM publicacion p
+            JOIN usuario u ON p.id_creador = u.id_usuario
+            JOIN imagen i ON i.id_publicacion = p.id_publicacion
+            JOIN usuario_seguidor us ON us.id_usuario = p.id_creador
+            LEFT JOIN voto v ON v.id_imagen = i.id_imagen
+            LEFT JOIN publicacion_etiqueta pe ON pe.id_publicacion = p.id_publicacion
+            LEFT JOIN etiqueta e ON e.id_etiqueta = pe.id_etiqueta
+            WHERE us.id_seguidor = :idUsuario AND p.estado = 'activo'
+            GROUP BY p.id_publicacion, i.id_imagen, u.id_usuario, u.nombre, u.apellido
+            ORDER BY p.fecha_publicacion DESC
+            LIMIT 10
+        `, {
+            replacements: { idUsuario: req.session.usuario.id },
+            type: QueryTypes.SELECT
+        });
+        siguiendo = await agregarComentarios(siguiendo);
+
         res.render('home', {
             usuario: req.session.usuario,
             exito: req.query.exito,
             error: req.query.error,
             destacadas,
             recientes,
-            descubri
+            descubri,
+            siguiendo
         });
 
     } catch (error) {
