@@ -1,0 +1,32 @@
+extends ../layout
+
+block content
+  h1.mb-4 Editar publicación
+
+  if error
+    .alert.alert-danger #{error}
+
+  form(method='POST' action=`/publicacion/${publicacion.id_publicacion}/editar` enctype='multipart/form-data')
+    .mb-3
+      input.form-control(type='text' name='titulo' value=publicacion.titulo required placeholder='Título')
+    .mb-3
+      textarea.form-control(name='descripcion' rows='3' placeholder='Descripción opcional')= publicacion.descripcion
+    .mb-3
+      label.form-label Imágenes actuales
+      .d-flex.gap-2.flex-wrap
+        each img in imagenes
+          img(src=img.foto width='100' style='border-radius:8px')
+    .mb-3
+      label.form-label Reemplazar imágenes (opcional)
+      input.form-control(type='file' name='imagenes' multiple accept='image/*')
+      small.text-muted Si subís nuevas imágenes, se borrarán los votos y comentarios anteriores.
+    .mb-3
+      input.form-control(type='text' name='etiquetas' value=etiquetas placeholder='Etiquetas: paisaje, naturaleza')
+    .mb-3
+      label.form-label Licencia
+      select.form-select(name='licencia')
+        option(value='sin_copyright') Sin copyright
+        option(value='copyright') Con copyright
+    .mb-3
+      button.btn.btn-primary(type='submit') Guardar cambios
+    a.btn.btn-secondary(href=`/perfil/${usuario.id}`) Cancelar
