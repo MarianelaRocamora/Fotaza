@@ -32,31 +32,31 @@ block content
                   option(value='4') 4 ⭐
                   option(value='5') 5 ⭐
                 button.btn.btn-sm.btn-outline-warning(type='submit') Votar
-          .card-footer
-            h6 💬 Comentarios
-            if pub.comentario_clausurado
-              p.text-muted.small 🔒 Comentarios cerrados.
-              if pub.comentarios && pub.comentarios.length > 0
-                each c in pub.comentarios
-                  .mb-1.p-2.bg-light.rounded
-                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
-                    span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
-                    p.mb-0.small= c.texto
-            else
-              if pub.comentarios && pub.comentarios.length > 0
-                each c in pub.comentarios
-                  .mb-1.p-2.bg-light.rounded
-                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
-                    span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
-                    p.mb-0.small= c.texto
+            .card-footer
+              h6 💬 Comentarios
+              if pub.comentario_clausurado
+                p.text-muted.small 🔒 Comentarios cerrados.
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
               else
-                p.text-muted.small Sé el primero en comentar.
-              form.mt-2(method='POST' action='/comentar')
-                input(type='hidden' name='id_imagen' value=pub.id_imagen)
-                input(type='hidden' name='redirect_to' value='/home')
-                .input-group.input-group-sm
-                  input.form-control(type='text' name='texto' placeholder='Escribí un comentario...' required)
-                  button.btn.btn-outline-secondary(type='submit') Comentar
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
+                else
+                  p.text-muted.small Sé el primero en comentar.
+                form.mt-2(method='POST' action='/comentar')
+                  input(type='hidden' name='id_imagen' value=pub.id_imagen)
+                  input(type='hidden' name='redirect_to' value='/home')
+                  .input-group.input-group-sm
+                    input.form-control(type='text' name='texto' placeholder='Escribí un comentario...' required)
+                    button.btn.btn-outline-secondary(type='submit') Comentar
   else
     p.text-muted Aún no hay publicaciones destacadas.
 
@@ -93,31 +93,31 @@ block content
                   option(value='4') 4 ⭐
                   option(value='5') 5 ⭐
                 button.btn.btn-sm.btn-outline-warning(type='submit') Votar
-          .card-footer
-            h6 💬 Comentarios
-            if pub.comentario_clausurado
-              p.text-muted.small 🔒 Comentarios cerrados.
-              if pub.comentarios && pub.comentarios.length > 0
-                each c in pub.comentarios
-                  .mb-1.p-2.bg-light.rounded
-                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
-                    span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
-                    p.mb-0.small= c.texto
-            else
-              if pub.comentarios && pub.comentarios.length > 0
-                each c in pub.comentarios
-                  .mb-1.p-2.bg-light.rounded
-                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
-                    span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
-                    p.mb-0.small= c.texto
+            .card-footer
+              h6 💬 Comentarios
+              if pub.comentario_clausurado
+                p.text-muted.small 🔒 Comentarios cerrados.
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
               else
-                p.text-muted.small Sé el primero en comentar.
-              form.mt-2(method='POST' action='/comentar')
-                input(type='hidden' name='id_imagen' value=pub.id_imagen)
-                input(type='hidden' name='redirect_to' value='/home')
-                .input-group.input-group-sm
-                  input.form-control(type='text' name='texto' placeholder='Escribí un comentario...' required)
-                  button.btn.btn-outline-secondary(type='submit') Comentar
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
+                else
+                  p.text-muted.small Sé el primero en comentar.
+                form.mt-2(method='POST' action='/comentar')
+                  input(type='hidden' name='id_imagen' value=pub.id_imagen)
+                  input(type='hidden' name='redirect_to' value='/home')
+                  .input-group.input-group-sm
+                    input.form-control(type='text' name='texto' placeholder='Escribí un comentario...' required)
+                    button.btn.btn-outline-secondary(type='submit') Comentar
   else
     p.text-muted Aún no hay publicaciones recientes.
 
@@ -156,19 +156,28 @@ block content
                 button.btn.btn-sm.btn-outline-warning(type='submit') Votar
             .card-footer
               h6 💬 Comentarios
-              if pub.comentarios && pub.comentarios.length > 0
-                each c in pub.comentarios
-                  .mb-1.p-2.bg-light.rounded
-                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
-                    span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
-                    p.mb-0.small= c.texto
+              if pub.comentario_clausurado
+                p.text-muted.small 🔒 Comentarios cerrados.
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
               else
-                p.text-muted.small Sé el primero en comentar.
-              form.mt-2(method='POST' action='/comentar')
-                input(type='hidden' name='id_imagen' value=pub.id_imagen)
-                input(type='hidden' name='redirect_to' value='/home')
-                .input-group.input-group-sm
-                  input.form-control(type='text' name='texto' placeholder='Escribí un comentario...' required)
-                  button.btn.btn-outline-secondary(type='submit') Comentar
+                if pub.comentarios && pub.comentarios.length > 0
+                  each c in pub.comentarios
+                    .mb-1.p-2.bg-light.rounded
+                      strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                      span.text-muted.small  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                      p.mb-0.small= c.texto
+                else
+                  p.text-muted.small Sé el primero en comentar.
+                form.mt-2(method='POST' action='/comentar')
+                  input(type='hidden' name='id_imagen' value=pub.id_imagen)
+                  input(type='hidden' name='redirect_to' value='/home')
+                  .input-group.input-group-sm
+                    input.form-control(type='text' name='texto' placeholder='Escribí un comentario...' required)
+                    button.btn.btn-outline-secondary(type='submit') Comentar
   else
     p.text-muted Aún no hay publicaciones para descubrir.
