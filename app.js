@@ -44,7 +44,11 @@ app.use(manejarErrorMulter);
 
 // ─── Ruta raíz ───────────────────────────────────────────
 app.get('/', (req, res) => {
-    res.send('Fotaza funcionando ✅');
+    if (req.session.usuario) {
+        res.redirect('/home');
+    } else {
+        res.redirect('/login');
+    }
 });
 
 // ─── Servidor ────────────────────────────────────────────

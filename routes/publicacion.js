@@ -29,9 +29,4 @@ router.post(
   editarPublicacion
 );
 
-router.get('/publicacion/:id/editar', (req,res)=>{
-   console.log(req.params.id);
-   res.send('editar ok');
-});
-
 module.exports = router;
