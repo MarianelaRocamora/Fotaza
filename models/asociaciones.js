@@ -6,23 +6,23 @@ const Voto = require('./Voto');
 const Comentario = require('./Comentario');
 const UsuarioSeguidor = require('./UsuarioSeguidor');
 
-// ─── Usuario ────────────────────────────────────────────
+// ─── Usuario ↔ Publicacion ──────────────────────────────
 Publicacion.belongsTo(Usuario, { foreignKey: 'id_creador', as: 'creador' });
 Usuario.hasMany(Publicacion, { foreignKey: 'id_creador', as: 'publicaciones' });
 
-// ─── Etiquetas ──────────────────────────────────────────
+// ─── Publicacion ↔ Etiqueta ─────────────────────────────
 Publicacion.belongsToMany(Etiqueta, {
-    through: 'publicacion_etiqueta',
+    through: { model: 'publicacion_etiqueta', timestamps: false },
     foreignKey: 'id_publicacion',
     as: 'etiquetas'
 });
 Etiqueta.belongsToMany(Publicacion, {
-    through: 'publicacion_etiqueta',
+    through: { model: 'publicacion_etiqueta', timestamps: false },
     foreignKey: 'id_etiqueta',
     as: 'publicaciones'
 });
 
-// ─── Imágenes ───────────────────────────────────────────
+// ─── Publicacion ↔ Imagen ───────────────────────────────
 Publicacion.hasMany(Imagen, { foreignKey: 'id_publicacion', as: 'imagenes' });
 Imagen.belongsTo(Publicacion, { foreignKey: 'id_publicacion', as: 'publicacion' });
 

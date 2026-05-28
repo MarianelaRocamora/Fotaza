@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "db:init": "node db/init.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "aplicacion Web para compartir fotos",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
