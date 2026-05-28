@@ -13,20 +13,21 @@ const {
   editarPublicacion
 } = require('../controllers/edicionController');
 
-router.get('/publicacion/nueva', mostrarFormulario);
+router.get('/nueva', mostrarFormulario);
 
 router.post(
-  '/publicacion/nueva',
+  '/nueva',
   upload.array('imagenes', 10),
   crearPublicacion
 );
 
-router.get('/publicacion/:id/editar', mostrarEditar);
+router.get('/:id/editar', mostrarEditar);
 
 router.post(
-  '/publicacion/:id/editar',
+  '/:id/editar',
   upload.array('imagenes', 10),
   editarPublicacion
 );
+
 
 module.exports = router;

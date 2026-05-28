@@ -11,7 +11,7 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-// ─── Middlewares ─────────────────────────────────────────
+// ─── Middlewares globales ─────────────────────────────────
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -22,36 +22,39 @@ app.use(session({
     cookie: { secure: false }
 }));
 
-// ─── Rutas ───────────────────────────────────────────────
-const authRoutes       = require('./routes/auth');
+// ─── Middleware de autenticación ──────────────────────────
+const { soloRegistrados } = require('./middlewares/auth');
+
+// ─── Importar rutas ───────────────────────────────────────
+const authRoutes        = require('./routes/auth');
 const publicacionRoutes = require('./routes/publicacion');
-const votoRoutes       = require('./routes/voto');
-const comentarioRoutes = require('./routes/comentario');
-const perfilRoutes     = require('./routes/perfil');
+const votoRoutes        = require('./routes/voto');
+const comentarioRoutes  = require('./routes/comentario');
+const perfilRoutes      = require('./routes/perfil');
+const busquedaRoutes    = require('./routes/busqueda');
+const imagenRoutes      = require('./routes/imagen');
 const { manejarErrorMulter } = require('./controllers/publicacionController');
-const busquedaRoutes = require('./routes/busqueda');
-const imagenRoutes = require('./routes/imagen');
 
+// ─── Rutas públicas (anónimos permitidos) ─────────────────
+app.use('/', authRoutes);       // login, registro, logout, home
+app.use('/', imagenRoutes);     // ver imágenes
+app.use('/', busquedaRoutes);   // buscar publicaciones
 
-app.use('/', imagenRoutes);
-app.use('/', busquedaRoutes);
-app.use('/', authRoutes);
-app.use('/', publicacionRoutes);
-app.use('/', votoRoutes);
-app.use('/', comentarioRoutes);
-app.use('/', perfilRoutes);
+// ─── Rutas protegidas (solo usuarios registrados) ─────────
+app.use('/publicacion', soloRegistrados, publicacionRoutes);
+app.use('/votar',       soloRegistrados, votoRoutes);
+app.use('/comentar',    soloRegistrados, comentarioRoutes);
+app.use('/perfil',      soloRegistrados, perfilRoutes);
+
+// ─── Manejo de errores de Multer ──────────────────────────
 app.use(manejarErrorMulter);
 
-// ─── Ruta raíz ───────────────────────────────────────────
+// ─── Ruta raíz ────────────────────────────────────────────
 app.get('/', (req, res) => {
-    if (req.session.usuario) {
-        res.redirect('/home');
-    } else {
-        res.redirect('/login');
-    }
+    res.redirect('/home');
 });
 
-// ─── Servidor ────────────────────────────────────────────
+// ─── Servidor ─────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 sequelize.authenticate()
     .then(() => {
