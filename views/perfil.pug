@@ -1,78 +1,166 @@
-html
-  head
-    title Perfil - #{perfil.nombre}
-  body
-    a(href='/home') ← Volver al inicio
+extends layout
 
+block content
+  .container.py-4
+
+    //- ─── Alertas ────────────────────────────────────────
     if exito
-      p(style='color:green') ✅ #{exito}
+      .alert.alert-success.alert-dismissible.fade.show
+        i.bi.bi-check-circle.me-2
+        = exito
+        button.btn-close(type='button' data-bs-dismiss='alert')
     if error
-      p(style='color:red') ❌ #{error}
+      .alert.alert-danger.alert-dismissible.fade.show
+        i.bi.bi-exclamation-triangle.me-2
+        = error
+        button.btn-close(type='button' data-bs-dismiss='alert')
 
-    h1 Perfil de #{perfil.nombre} #{perfil.apellido}
-    if perfil.bio
-      p= perfil.bio
+    //- ─── Header del perfil ──────────────────────────────
+    .card.shadow-sm.mb-4
+      .card-body
+        .d-flex.align-items-center.gap-3.flex-wrap
+          .rounded-circle.bg-primary.text-white.d-flex.align-items-center.justify-content-center(
+            style='width:64px;height:64px;font-size:1.6rem;flex-shrink:0'
+          )
+            | #{perfil.nombre.charAt(0).toUpperCase()}
+          div
+            h3.mb-0= `${perfil.nombre} ${perfil.apellido}`
+            if perfil.bio
+              p.text-muted.mb-1.small= perfil.bio
+            .d-flex.gap-3.mt-1
+              span.badge.bg-light.text-dark.border
+                i.bi.bi-people.me-1
+                | #{totalSeguidores} seguidores
+              span.badge.bg-light.text-dark.border
+                i.bi.bi-person-check.me-1
+                | Siguiendo #{totalSeguidos}
 
-    p Seguidores: #{totalSeguidores} · Siguiendo: #{totalSeguidos}
+          if !esPropioPerfil && usuario
+            .ms-auto
+              if yaSigue
+                form(method='POST' action=`/perfil/${perfil.id_usuario}/dejar-de-seguir`)
+                  button.btn.btn-outline-secondary(type='submit')
+                    i.bi.bi-person-dash.me-1
+                    | Dejar de seguir
+              else
+                form(method='POST' action=`/perfil/${perfil.id_usuario}/seguir`)
+                  button.btn.btn-primary(type='submit')
+                    i.bi.bi-person-plus.me-1
+                    | Seguir
 
-    if !esPropioPerfil
-      if yaSigue
-        form(method='POST' action=`/perfil/${perfil.id_usuario}/dejar-de-seguir`)
-          button(type='submit') Dejar de seguir
-      else
-        form(method='POST' action=`/perfil/${perfil.id_usuario}/seguir`)
-          button(type='submit') Seguir
-
-    hr
-    h2 Publicaciones de #{perfil.nombre}
+    //- ─── Publicaciones ──────────────────────────────────
+    .d-flex.justify-content-between.align-items-center.mb-3
+      h4.mb-0
+        i.bi.bi-grid.me-2
+        | Publicaciones de #{perfil.nombre}
+      if esPropioPerfil
+        a.btn.btn-primary.btn-sm(href='/publicacion/nueva')
+          i.bi.bi-plus-circle.me-1
+          | Nueva publicación
 
     if publicaciones && publicaciones.length > 0
       each pub in publicaciones
-        div(style='border:1px solid #ccc; margin:10px; padding:10px')
-          h3= pub.titulo
-          if pub.foto
-            img(src=pub.foto width='200')
-          if pub.descripcion
-            p= pub.descripcion
-          if pub.etiquetas
-            p
-              | 🏷️ 
-              = pub.etiquetas
-          p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos || 0} votos)
-          hr
-          h4 Comentarios
-          if pub.comentario_clausurado
-            p 🔒 Los comentarios están cerrados.
-            if pub.comentarios && pub.comentarios.length > 0
-              each c in pub.comentarios
-                div(style='margin:5px 0; padding:5px; background:#f9f9f9')
-                  p
-                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
-                    |  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
-                  p= c.texto
-          else
-            if pub.comentarios && pub.comentarios.length > 0
-              each c in pub.comentarios
-                div(style='margin:5px 0; padding:5px; background:#f9f9f9')
-                  p
-                    strong= c.comentador ? c.comentador.nombre : 'Usuario'
-                    |  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
-                  p= c.texto
-            else
-              p Sé el primero en comentar.
-            form(method='POST' action='/comentar')
-              input(type='hidden' name='id_imagen' value=pub.id_imagen)
-              input(type='hidden' name='redirect_to' value=`/perfil/${perfil.id_usuario}`)
-              textarea(name='texto' rows='2' placeholder='Escribí un comentario...' required)
-              br
-              button(type='submit') Comentar
-          if esPropioPerfil
-            if pub.comentario_clausurado
-              form(method='POST' action=`/imagen/${pub.id_imagen}/abrir-comentarios`)
-                button(type='submit') 🔓 Abrir comentarios
-            else
-              form(method='POST' action=`/imagen/${pub.id_imagen}/cerrar-comentarios`)
-                button(type='submit') 🔒 Cerrar comentarios
-            a(href=`/publicacion/${pub.id_publicacion}/editar`) Editar
+        .card.shadow-sm.mb-4
+          .card-header.d-flex.justify-content-between.align-items-center
+            h5.mb-0= pub.titulo
+            if esPropioPerfil
+              a.btn.btn-outline-warning.btn-sm(href=`/publicacion/${pub.id_publicacion}/editar`)
+                i.bi.bi-pencil.me-1
+                | Editar
+
+          .card-body
+
+            //- ─── Descripción ────────────────────────
+            if pub.descripcion
+              p.text-muted= pub.descripcion
+
+            //- ─── Etiquetas ──────────────────────────
+            if pub.etiquetas
+              p.mb-2
+                i.bi.bi-tags.me-1
+                each tag in pub.etiquetas.split(', ')
+                  span.badge.bg-secondary.me-1= tag
+
+            //- ─── Imágenes de la publicación ─────────
+            if pub.imagenes && pub.imagenes.length > 0
+              .row.g-3.mb-3
+                each img in pub.imagenes
+                  .col-md-6.col-lg-4
+                    .card.h-100.border
+                      img.card-img-top(
+                        src=img.foto
+                        alt=pub.titulo
+                        style='height:200px;object-fit:cover'
+                      )
+                      .card-body.py-2
+                        .d-flex.align-items-center.justify-content-between.mb-1
+                          span.badge.bg-warning.text-dark
+                            | ⭐ #{parseFloat(img.promedio || pub.promedio || 0).toFixed(1)}
+                          span.text-muted.small (#{img.total_votos || pub.total_votos || 0} votos)
+                        if img.licencia === 'copyright'
+                          span.badge.bg-danger.w-100.text-center 🔒 Copyright
+                        else
+                          span.badge.bg-success.w-100.text-center 🌐 Sin copyright
+
+                      //- ─── Votar (solo si no es propio perfil) ───
+                      if usuario && !esPropioPerfil
+                        .card-footer.py-2
+                          form.d-flex.gap-2(method='POST' action='/votar')
+                            input(type='hidden' name='id_imagen' value=img.id_imagen)
+                            input(type='hidden' name='redirect_to' value=`/perfil/${perfil.id_usuario}`)
+                            select.form-select.form-select-sm(name='valoracion' style='width:80px')
+                              option(value='1') 1 ⭐
+                              option(value='2') 2 ⭐
+                              option(value='3') 3 ⭐
+                              option(value='4') 4 ⭐
+                              option(value='5') 5 ⭐
+                            button.btn.btn-sm.btn-outline-warning(type='submit') Votar
+
+                      //- ─── Comentarios por imagen ────────────────
+                      .card-footer
+                        .d-flex.justify-content-between.align-items-center.mb-2
+                          h6.mb-0
+                            i.bi.bi-chat.me-1
+                            | Comentarios
+                          if esPropioPerfil
+                            if img.comentario_clausurado
+                              form(method='POST' action=`/imagen/${img.id_imagen}/abrir-comentarios`)
+                                input(type='hidden' name='redirect_to' value=`/perfil/${perfil.id_usuario}`)
+                                button.btn.btn-outline-success.btn-sm(type='submit')
+                                  i.bi.bi-unlock.me-1
+                                  | Abrir
+                            else
+                              form(method='POST' action=`/imagen/${img.id_imagen}/cerrar-comentarios`)
+                                input(type='hidden' name='redirect_to' value=`/perfil/${perfil.id_usuario}`)
+                                button.btn.btn-outline-secondary.btn-sm(type='submit')
+                                  i.bi.bi-lock.me-1
+                                  | Cerrar
+
+                        if img.comentario_clausurado
+                          p.text-muted.small.mb-2 🔒 Comentarios cerrados.
+
+                        if img.comentarios && img.comentarios.length > 0
+                          each c in img.comentarios
+                            .mb-1.p-2.bg-light.rounded.small
+                              strong= c.comentador ? c.comentador.nombre : 'Usuario'
+                              span.text-muted  · #{new Date(c.fecha_comentario).toLocaleDateString('es-AR')}
+                              p.mb-0= c.texto
+                        else
+                          p.text-muted.small Sé el primero en comentar.
+
+                        if !img.comentario_clausurado && usuario
+                          form.mt-2(method='POST' action='/comentar')
+                            input(type='hidden' name='id_imagen' value=img.id_imagen)
+                            input(type='hidden' name='redirect_to' value=`/perfil/${perfil.id_usuario}`)
+                            .input-group.input-group-sm
+                              input.form-control(type='text' name='texto' placeholder='Comentar...' required)
+                              button.btn.btn-outline-secondary(type='submit') Enviar
+
     else
-      p Este usuario aún no tiene publicaciones.
+      .text-center.py-5.text-muted
+        i.bi.bi-camera.display-4.d-block.mb-2
+        p Este usuario aún no tiene publicaciones.
+        if esPropioPerfil
+          a.btn.btn-primary(href='/publicacion/nueva')
+            i.bi.bi-plus-circle.me-1
+            | Crear primera publicación

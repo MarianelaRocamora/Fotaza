@@ -6,29 +6,59 @@ const { QueryTypes } = require('sequelize');
 const sequelize = require('../db/sequelize');
 const Comentario = require('../models/Comentario');
 
-//agregar comentarios a publicaciones
-const agregarComentarios = async (pubs) => {
-    if (!pubs.length) return pubs;
-
-    const idImagenes = pubs.map(p => p.id_imagen);
+// ─── Helper: agrega comentarios a cada imagen ────────────
+const agregarComentariosAImagenes = async (imagenes) => {
+    if (!imagenes.length) return imagenes;
+    const idImagenes = imagenes.map(i => i.id_imagen);
     const comentarios = await Comentario.findAll({
         where: { id_imagen: idImagenes, estado: 'activo' },
         order: [['fecha_comentario', 'ASC']],
         include: [{ model: Usuario, as: 'comentador', attributes: ['nombre'] }]
     });
-
-    return pubs.map(pub => ({
-        ...pub,
-        comentarios: comentarios.filter(c => parseInt(c.id_imagen, 10) === parseInt(pub.id_imagen, 10))
+    return imagenes.map(img => ({
+        ...img.toJSON ? img.toJSON() : img,
+        comentarios: comentarios.filter(c => parseInt(c.id_imagen) === parseInt(img.id_imagen))
     }));
 };
 
-// Ver perfil
-const verPerfil = async (req, res) => {
-    if (!req.session.usuario) return res.redirect('/login');
+// ─── Helper: armar publicaciones con imágenes agrupadas ──
+const armarPublicaciones = async (idCreador) => {
+    // 1. Traer publicaciones con etiquetas y votos promediados
+    const pubs = await sequelize.query(`
+        SELECT 
+            p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion,
+            COALESCE(AVG(v.valoracion), 0) AS promedio,
+            COUNT(DISTINCT v.id_voto) AS total_votos,
+            STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
+        FROM publicacion p
+        LEFT JOIN imagen i ON i.id_publicacion = p.id_publicacion
+        LEFT JOIN voto v ON v.id_imagen = i.id_imagen
+        LEFT JOIN publicacion_etiqueta pe ON pe.id_publicacion = p.id_publicacion
+        LEFT JOIN etiqueta e ON e.id_etiqueta = pe.id_etiqueta
+        WHERE p.id_creador = :idCreador AND p.estado = 'activo'
+        GROUP BY p.id_publicacion
+        ORDER BY p.fecha_publicacion DESC
+    `, { replacements: { idCreador }, type: QueryTypes.SELECT });
 
+    if (!pubs.length) return [];
+
+    // 2. Para cada publicación, traer sus imágenes con comentarios
+    const pubsCompletas = await Promise.all(pubs.map(async (pub) => {
+        const imagenes = await Imagen.findAll({
+            where: { id_publicacion: pub.id_publicacion },
+            order: [['fecha_subida', 'ASC']]
+        });
+        const imagenesConComentarios = await agregarComentariosAImagenes(imagenes);
+        return { ...pub, imagenes: imagenesConComentarios };
+    }));
+
+    return pubsCompletas;
+};
+
+// ─── Ver perfil ──────────────────────────────────────────
+const verPerfil = async (req, res) => {
     const idPerfil = parseInt(req.params.id, 10);
-    const idSesion = parseInt(req.session.usuario.id, 10);
+    const idSesion = req.session.usuario ? parseInt(req.session.usuario.id, 10) : null;
 
     try {
         const usuario = await Usuario.findByPk(idPerfil, {
@@ -37,45 +67,19 @@ const verPerfil = async (req, res) => {
 
         if (!usuario) return res.redirect('/home?error=Usuario no encontrado');
 
-        // Publicaciones del usuario con sus imágenes
-        let publicaciones = await sequelize.query(`
-            SELECT p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion,
-                i.id_imagen, i.foto, i.comentario_clausurado,
-                COALESCE(AVG(v.valoracion), 0) AS promedio,
-                COUNT(v.id_voto) AS total_votos,
-                STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
-            FROM publicacion p
-            JOIN imagen i ON i.id_publicacion = p.id_publicacion
-            LEFT JOIN voto v ON i.id_imagen = v.id_imagen
-            LEFT JOIN publicacion_etiqueta pe ON pe.id_publicacion = p.id_publicacion
-            LEFT JOIN etiqueta e ON e.id_etiqueta = pe.id_etiqueta
-            WHERE p.id_creador = :idPerfil AND p.estado = 'activo'
-            GROUP BY p.id_publicacion, i.id_imagen
-            ORDER BY p.fecha_publicacion DESC
-        `, {
-            replacements: { idPerfil },
-            type: QueryTypes.SELECT
-        });
-        publicaciones = await agregarComentarios(publicaciones);
+        const publicaciones = await armarPublicaciones(idPerfil);
 
-        // Cantidad de seguidores y seguidos
-        const totalSeguidores = await UsuarioSeguidor.count({
-            where: { id_usuario: idPerfil }
-        });
+        const totalSeguidores = await UsuarioSeguidor.count({ where: { id_usuario: idPerfil } });
+        const totalSeguidos = await UsuarioSeguidor.count({ where: { id_seguidor: idPerfil } });
 
-        const totalSeguidos = await UsuarioSeguidor.count({
-            where: { id_seguidor: idPerfil }
-        });
-
-        // ¿El usuario logueado ya sigue a este perfil?
-        const yaSigue = await UsuarioSeguidor.findOne({
+        const yaSigue = idSesion ? await UsuarioSeguidor.findOne({
             where: { id_usuario: idPerfil, id_seguidor: idSesion }
-        });
+        }) : false;
 
-        const esPropioPerfil = idPerfil === idSesion;
+        const esPropioPerfil = idSesion === idPerfil;
 
         res.render('perfil', {
-            usuario: req.session.usuario,
+            usuario: req.session.usuario || null,
             perfil: usuario,
             publicaciones,
             totalSeguidores,
@@ -90,39 +94,31 @@ const verPerfil = async (req, res) => {
     }
 };
 
-// Seguir usuario
+// ─── Seguir usuario ──────────────────────────────────────
 const seguir = async (req, res) => {
-    if (!req.session.usuario) return res.redirect('/login');
-
     const idUsuario = parseInt(req.params.id, 10);
     const idSeguidor = parseInt(req.session.usuario.id, 10);
 
-    if (idUsuario === idSeguidor) {
+    if (idUsuario === idSeguidor)
         return res.redirect(`/perfil/${idUsuario}?error=No podés seguirte a vos mismo`);
-    }
 
     try {
         const yaExiste = await UsuarioSeguidor.findOne({
             where: { id_usuario: idUsuario, id_seguidor: idSeguidor }
         });
-
-        if (yaExiste) {
+        if (yaExiste)
             return res.redirect(`/perfil/${idUsuario}?error=Ya seguís a este usuario`);
-        }
 
         await UsuarioSeguidor.create({ id_usuario: idUsuario, id_seguidor: idSeguidor });
         res.redirect(`/perfil/${idUsuario}?exito=Ahora seguís a este usuario`);
-
     } catch (error) {
         console.error(error);
         res.redirect(`/perfil/${idUsuario}?error=Error al seguir usuario`);
     }
 };
 
-// Dejar de seguir
+// ─── Dejar de seguir ─────────────────────────────────────
 const dejarDeSeguir = async (req, res) => {
-    if (!req.session.usuario) return res.redirect('/login');
-
     const idUsuario = parseInt(req.params.id, 10);
     const idSeguidor = parseInt(req.session.usuario.id, 10);
 
@@ -130,9 +126,7 @@ const dejarDeSeguir = async (req, res) => {
         await UsuarioSeguidor.destroy({
             where: { id_usuario: idUsuario, id_seguidor: idSeguidor }
         });
-
         res.redirect(`/perfil/${idUsuario}?exito=Dejaste de seguir a este usuario`);
-
     } catch (error) {
         console.error(error);
         res.redirect(`/perfil/${idUsuario}?error=Error al dejar de seguir`);

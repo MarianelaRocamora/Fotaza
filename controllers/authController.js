@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const { QueryTypes } = require('sequelize');
 const sequelize = require('../db/sequelize');
 const Comentario = require('../models/Comentario');
-const Usuario2 = require('../models/Usuario');
+const Imagen = require('../models/Imagen');
 
 const mostrarRegistro = (req, res) => {
     res.render('registro');
@@ -65,47 +65,58 @@ const login = async (req, res) => {
     }
 };
 
-// ─── Helper: agrega comentarios a cada publicación ──────
-const agregarComentarios = async (pubs) => {
-    if (!pubs.length) return pubs;
-
-    const idImagenes = pubs.map(p => p.id_imagen);
+// ─── Helper: agrega comentarios a cada imagen ────────────
+const agregarComentariosAImagenes = async (imagenes) => {
+    if (!imagenes.length) return imagenes;
+    const idImagenes = imagenes.map(i => i.id_imagen);
     const comentarios = await Comentario.findAll({
         where: { id_imagen: idImagenes, estado: 'activo' },
         include: [{ model: Usuario, as: 'comentador', attributes: ['nombre'] }],
         order: [['fecha_comentario', 'ASC']]
     });
-
-    return pubs.map(pub => ({
-        ...pub,
-        comentarios: comentarios.filter(c => parseInt(c.id_imagen, 10) === parseInt(pub.id_imagen, 10))
+    return imagenes.map(img => ({
+        ...img,
+        comentarios: comentarios.filter(c => parseInt(c.id_imagen) === parseInt(img.id_imagen))
     }));
 };
 
-// ─── Helper: query base del home ────────────────────────
-const queryHome = async (orden, having = '', soloPublico = false) => {
+// ─── Helper: query publicaciones agrupadas ───────────────
+const queryPublicaciones = async (extraWhere = '', having = '', params = {}, soloPublico = false, limit = 10) => {
     const filtroLicencia = soloPublico ? `AND i.licencia = 'sin_copyright'` : '';
+
     const pubs = await sequelize.query(`
-        SELECT p.id_publicacion, p.titulo, p.descripcion, 
-               i.id_imagen, i.foto, i.comentario_clausurado, i.licencia,
-               u.id_usuario, u.nombre AS nombre_autor, u.apellido AS apellido_autor,
-               COALESCE(AVG(v.valoracion), 0) AS promedio,
-               COUNT(v.id_voto) AS total_votos,
-               STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
+        SELECT 
+            p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion,
+            u.id_usuario, u.nombre AS nombre_autor, u.apellido AS apellido_autor,
+            COALESCE(AVG(v.valoracion), 0) AS promedio,
+            COUNT(DISTINCT v.id_voto) AS total_votos,
+            STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
         FROM publicacion p
         JOIN usuario u ON p.id_creador = u.id_usuario
-        JOIN imagen i ON i.id_publicacion = p.id_publicacion
-        LEFT JOIN voto v ON i.id_imagen = v.id_imagen
+        LEFT JOIN imagen i ON i.id_publicacion = p.id_publicacion
+        LEFT JOIN voto v ON v.id_imagen = i.id_imagen
         LEFT JOIN publicacion_etiqueta pe ON pe.id_publicacion = p.id_publicacion
         LEFT JOIN etiqueta e ON e.id_etiqueta = pe.id_etiqueta
-        WHERE p.estado = 'activo' ${filtroLicencia}
-        GROUP BY p.id_publicacion, i.id_imagen, u.id_usuario, u.nombre, u.apellido
+        WHERE p.estado = 'activo' ${filtroLicencia} ${extraWhere}
+        GROUP BY p.id_publicacion, u.id_usuario, u.nombre, u.apellido
         ${having}
-        ORDER BY ${orden}
-        LIMIT 10
-    `, { type: QueryTypes.SELECT });
+        ORDER BY ${params.orden}
+        LIMIT ${limit}
+    `, { replacements: params, type: QueryTypes.SELECT });
 
-    return agregarComentarios(pubs);
+    if (!pubs.length) return [];
+
+    const pubsCompletas = await Promise.all(pubs.map(async (pub) => {
+        const imagenes = await Imagen.findAll({
+            where: { id_publicacion: pub.id_publicacion },
+            order: [['fecha_subida', 'ASC']],
+            raw: true
+        });
+        const imagenesConComentarios = await agregarComentariosAImagenes(imagenes);
+        return { ...pub, imagenes: imagenesConComentarios };
+    }));
+
+    return pubsCompletas;
 };
 
 // ─── Home ────────────────────────────────────────────────
@@ -114,40 +125,25 @@ const home = async (req, res) => {
     const soloPublico = esAnonimo;
 
     try {
-        const destacadas = await queryHome(
-            'promedio DESC',
-            'HAVING AVG(v.valoracion) >= 4 AND COUNT(v.id_voto) >= 5',
+        const destacadas = await queryPublicaciones(
+            '',
+            'HAVING AVG(v.valoracion) >= 4 AND COUNT(DISTINCT v.id_voto) >= 5',
+            { orden: 'promedio DESC' },
             soloPublico
         );
-        const recientes = await queryHome('p.fecha_publicacion DESC', '', soloPublico);
-        const descubri  = await queryHome('RANDOM()', '', soloPublico);
+        const recientes = await queryPublicaciones('', '', { orden: 'p.fecha_publicacion DESC' }, soloPublico);
+        const descubri = await queryPublicaciones('', '', { orden: 'RANDOM()' }, soloPublico);
 
         let siguiendo = [];
         if (!esAnonimo) {
-            siguiendo = await sequelize.query(`
-                SELECT p.id_publicacion, p.titulo, p.descripcion,
-                       i.id_imagen, i.foto, i.comentario_clausurado, i.licencia,
-                       u.id_usuario, u.nombre AS nombre_autor, u.apellido AS apellido_autor,
-                       COALESCE(AVG(v.valoracion), 0) AS promedio,
-                       COUNT(DISTINCT v.id_voto) AS total_votos,
-                       STRING_AGG(DISTINCT e.nombre_etiqueta, ', ') AS etiquetas
-                FROM publicacion p
-                JOIN usuario u ON p.id_creador = u.id_usuario
-                JOIN imagen i ON i.id_publicacion = p.id_publicacion
-                JOIN usuario_seguidor us ON us.id_usuario = p.id_creador
-                LEFT JOIN voto v ON v.id_imagen = i.id_imagen
-                LEFT JOIN publicacion_etiqueta pe ON pe.id_publicacion = p.id_publicacion
-                LEFT JOIN etiqueta e ON e.id_etiqueta = pe.id_etiqueta
-                WHERE us.id_seguidor = :idUsuario AND p.estado = 'activo'
-                GROUP BY p.id_publicacion, i.id_imagen, u.id_usuario, u.nombre, u.apellido
-                ORDER BY p.fecha_publicacion DESC
-                LIMIT 10
-            `, {
-                replacements: { idUsuario: req.session.usuario.id },
-                type: QueryTypes.SELECT
-            });
-            siguiendo = await agregarComentarios(siguiendo);
+            siguiendo = await queryPublicaciones(
+                'AND p.id_creador IN (SELECT id_usuario FROM usuario_seguidor WHERE id_seguidor = :idUsuario)',
+                '',
+                { orden: 'p.fecha_publicacion DESC', idUsuario: req.session.usuario.id },
+                false
+            );
         }
+        
 
         res.render('home', {
             usuario: req.session.usuario || null,

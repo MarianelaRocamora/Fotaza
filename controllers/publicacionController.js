@@ -39,11 +39,20 @@ const upload = multer({
 const manejarErrorMulter = (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.render('publicacion/nueva', { error: 'La imagen no puede superar 5MB' });
+            return res.render('publicacion/nueva', {
+                error: 'La imagen no puede superar 5MB',
+                usuario: req.session.usuario
+            });
         }
-        return res.render('publicacion/nueva', { error: 'Error al subir la imagen' });
+        return res.render('publicacion/nueva', {
+            error: 'Error al subir la imagen',
+            usuario: req.session.usuario
+        });
     } else if (err) {
-        return res.render('publicacion/nueva', { error: err.message });
+        return res.render('publicacion/nueva', {
+            error: err.message,
+            usuario: req.session.usuario
+        });
     }
     next();
 };
@@ -51,7 +60,7 @@ const manejarErrorMulter = (err, req, res, next) => {
 // ─── Mostrar formulario nueva ────────────────────────────
 const mostrarFormulario = (req, res) => {
     if (!req.session.usuario) return res.redirect('/login');
-    res.render('publicacion/nueva');
+    res.render('publicacion/nueva', { usuario: req.session.usuario });
 };
 
 // ─── Crear publicacion ───────────────────────────────────
@@ -60,14 +69,34 @@ const crearPublicacion = async (req, res) => {
 
     const { titulo, descripcion, etiquetas, licencia, marca_de_agua, texto_marca } = req.body;
 
+    const renderError = (msg) => res.render('publicacion/nueva', {
+        error: msg,
+        usuario: req.session.usuario,
+        valores: { titulo, descripcion, etiquetas, licencia, texto_marca }
+    });
+
+    // ─── Validaciones ────────────────────────────────────
+    if (!titulo || titulo.trim() === '') {
+        return renderError('El título es obligatorio');
+    }
+
     if (!req.files || req.files.length === 0) {
-        return res.render('publicacion/nueva', { error: 'Debés subir al menos una imagen (jpg, png, gif, webp)' });
+        return renderError('Debés subir al menos una imagen (jpg, png, gif, webp)');
+    }
+
+    if (!etiquetas || etiquetas.trim() === '') {
+        return renderError('Debés ingresar al menos una etiqueta');
+    }
+
+    const tags = etiquetas.split(',').map(t => t.trim().toLowerCase()).filter(t => t !== '');
+    if (tags.length === 0) {
+        return renderError('Debés ingresar al menos una etiqueta válida');
     }
 
     try {
         const publicacion = await Publicacion.create({
-            titulo,
-            descripcion,
+            titulo: titulo.trim(),
+            descripcion: descripcion || null,
             id_creador: req.session.usuario.id
         });
 
@@ -84,22 +113,19 @@ const crearPublicacion = async (req, res) => {
             });
         }
 
-        if (etiquetas) {
-            const tags = etiquetas.split(',').map(t => t.trim().toLowerCase());
-            for (const nombre of tags) {
-                const [etiqueta] = await Etiqueta.findOrCreate({ where: { nombre_etiqueta: nombre } });
-                await sequelize.query(
-                    'INSERT INTO publicacion_etiqueta (id_publicacion, id_etiqueta) VALUES (:pub, :etiq)',
-                    { replacements: { pub: publicacion.id_publicacion, etiq: etiqueta.id_etiqueta } }
-                );
-            }
+        for (const nombre of tags) {
+            const [etiqueta] = await Etiqueta.findOrCreate({ where: { nombre_etiqueta: nombre } });
+            await sequelize.query(
+                'INSERT INTO publicacion_etiqueta (id_publicacion, id_etiqueta) VALUES (:pub, :etiq)',
+                { replacements: { pub: publicacion.id_publicacion, etiq: etiqueta.id_etiqueta } }
+            );
         }
 
         res.redirect('/home?exito=Publicación creada exitosamente');
 
     } catch (error) {
         console.error(error);
-        res.render('publicacion/nueva', { error: 'Error al crear la publicación' });
+        renderError('Error al crear la publicación');
     }
 };
 
@@ -177,18 +203,32 @@ const editarPublicacion = async (req, res) => {
             return res.redirect(`/perfil/${idUsuario}?error=No podés editar una publicación con denuncias`);
         }
 
-        await publicacion.update({ titulo, descripcion });
+        // ─── Validaciones ────────────────────────────────
+        if (!titulo || titulo.trim() === '') {
+            const imagenes = await Imagen.findAll({ where: { id_publicacion: idPublicacion } });
+            return res.render('publicacion/editar', {
+                error: 'El título es obligatorio',
+                usuario: req.session.usuario,
+                publicacion,
+                imagenes,
+                etiquetas
+            });
+        }
+
+        if (!etiquetas || etiquetas.trim() === '') {
+            const imagenes = await Imagen.findAll({ where: { id_publicacion: idPublicacion } });
+            return res.render('publicacion/editar', {
+                error: 'Debés ingresar al menos una etiqueta',
+                usuario: req.session.usuario,
+                publicacion,
+                imagenes,
+                etiquetas
+            });
+        }
+
+        await publicacion.update({ titulo: titulo.trim(), descripcion: descripcion || null });
 
         if (req.files && req.files.length > 0) {
-            const imagenesViejas = await Imagen.findAll({ where: { id_publicacion: idPublicacion } });
-            const idsViejos = imagenesViejas.map(i => i.id_imagen);
-
-            if (idsViejos.length > 0) {
-                await sequelize.query('DELETE FROM voto WHERE id_imagen IN (:ids)', { replacements: { ids: idsViejos } });
-                await sequelize.query('DELETE FROM comentario WHERE id_imagen IN (:ids)', { replacements: { ids: idsViejos } });
-                await Imagen.destroy({ where: { id_publicacion: idPublicacion } });
-            }
-
             for (const file of req.files) {
                 const metadata = await sharp(file.path).metadata();
                 await Imagen.create({
@@ -206,7 +246,7 @@ const editarPublicacion = async (req, res) => {
         if (etiquetas) {
             await sequelize.query('DELETE FROM publicacion_etiqueta WHERE id_publicacion = :idPublicacion',
                 { replacements: { idPublicacion } });
-            const tags = etiquetas.split(',').map(t => t.trim().toLowerCase());
+            const tags = etiquetas.split(',').map(t => t.trim().toLowerCase()).filter(t => t !== '');
             for (const nombre of tags) {
                 const [etiqueta] = await Etiqueta.findOrCreate({ where: { nombre_etiqueta: nombre } });
                 await sequelize.query(

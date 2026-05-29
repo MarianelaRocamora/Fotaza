@@ -39,12 +39,13 @@ const { manejarErrorMulter } = require('./controllers/publicacionController');
 app.use('/', authRoutes);       // login, registro, logout, home
 app.use('/', imagenRoutes);     // ver imágenes
 app.use('/', busquedaRoutes);   // buscar publicaciones
+app.use('/', perfilRoutes);
 
 // ─── Rutas protegidas (solo usuarios registrados) ─────────
 app.use('/publicacion', soloRegistrados, publicacionRoutes);
 app.use('/votar',       soloRegistrados, votoRoutes);
 app.use('/comentar',    soloRegistrados, comentarioRoutes);
-app.use('/perfil',      soloRegistrados, perfilRoutes);
+
 
 // ─── Manejo de errores de Multer ──────────────────────────
 app.use(manejarErrorMulter);
