@@ -143,7 +143,6 @@ const home = async (req, res) => {
                 false
             );
         }
-        
 
         res.render('home', {
             usuario: req.session.usuario || null,

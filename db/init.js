@@ -2,19 +2,19 @@ require('dotenv').config();
 const sequelize = require('./sequelize');
 
 // Importar modelos directamente (sin pasar por asociaciones)
-const Usuario     = require('../models/Usuario');
+const Usuario = require('../models/Usuario');
 const Publicacion = require('../models/Publicacion');
-const Etiqueta    = require('../models/Etiqueta');
-const Imagen      = require('../models/Imagen');
-const Voto        = require('../models/Voto');
-const Comentario  = require('../models/Comentario');
+const Etiqueta = require('../models/Etiqueta');
+const Imagen = require('../models/Imagen');
+const Voto = require('../models/Voto');
+const Comentario = require('../models/Comentario');
 const UsuarioSeguidor = require('../models/UsuarioSeguidor');
 const bcrypt = require('bcrypt');
 
 // Tabla intermedia sin timestamps
 sequelize.define('publicacion_etiqueta', {}, {
     tableName: 'publicacion_etiqueta',
-    timestamps: false
+    timestamps: false,
 });
 
 async function init() {
@@ -36,29 +36,29 @@ async function init() {
 
             await Usuario.bulkCreate([
                 {
-                    nombre:   'Admin',
+                    nombre: 'Admin',
                     apellido: 'Fotaza',
-                    email:    'admin@fotaza.com',
-                    password: await hash('admin123'),
-                    rol:      'moderador',
-                    activo:   true
+                    correo: 'admin@fotaza.com',
+                    contrasena: await hash('admin123'),
+                    es_moderador: true,
+                    estado: 'activo',
                 },
                 {
-                    nombre:   'Juan',
+                    nombre: 'Juan',
                     apellido: 'Pérez',
-                    email:    'juan@fotaza.com',
-                    password: await hash('juan123'),
-                    rol:      'usuario',
-                    activo:   true
+                    correo: 'juan@fotaza.com',
+                    contrasena: await hash('juan123'),
+                    es_moderador: false,
+                    estado: 'activo',
                 },
                 {
-                    nombre:   'María',
+                    nombre: 'María',
                     apellido: 'González',
-                    email:    'maria@fotaza.com',
-                    password: await hash('maria123'),
-                    rol:      'usuario',
-                    activo:   true
-                }
+                    correo: 'maria@fotaza.com',
+                    contrasena: await hash('maria123'),
+                    es_moderador: false,
+                    estado: 'activo',
+                },
             ]);
 
             console.log('✅ Usuarios creados.');
