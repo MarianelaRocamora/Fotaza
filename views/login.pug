@@ -1,17 +1,50 @@
-html
-  head
-    title Login - Fotaza
-  body
-    h1 Iniciar sesión
-    if exito
-      p(style='color:green') ✅ ¡Usuario registrado exitosamente! Iniciá sesión.
-    if error
-      p(style='color:red')= error
-    form(method='POST' action='/login')
-      input(type='email' name='correo' placeholder='Correo' required)
-      br
-      input(type='password' name='contrasena' placeholder='Contraseña' required)
-      br
-      button(type='submit') Ingresar
-    br
-    a(href='/registro') ¿No tenés cuenta? Registrate
+extends layout
+
+block content
+  .container.py-5
+    .row.justify-content-center
+      .col-md-5.col-lg-4
+
+        .card.shadow-sm
+          .card-header.bg-dark.text-white.text-center.py-3
+            h4.mb-0
+              i.bi.bi-camera-fill.me-2
+              | Fotaza
+          .card-body.p-4
+
+            if exito
+              .alert.alert-success.d-flex.align-items-center.gap-2
+                i.bi.bi-check-circle-fill
+                | ¡Registro exitoso! Iniciá sesión.
+
+            if error
+              .alert.alert-danger.d-flex.align-items-center.gap-2
+                i.bi.bi-exclamation-triangle-fill
+                span= error
+
+            h5.card-title.text-center.mb-4 Iniciar sesión
+
+            form(method='POST' action='/login')
+              .mb-3
+                label.form-label(for='correo') Correo electrónico
+                input#correo.form-control(
+                  type='email'
+                  name='correo'
+                  placeholder='tu@correo.com'
+                  required
+                )
+              .mb-4
+                label.form-label(for='contrasena') Contraseña
+                input#contrasena.form-control(
+                  type='password'
+                  name='contrasena'
+                  placeholder='Tu contraseña'
+                  required
+                )
+              button.btn.btn-primary.w-100(type='submit')
+                i.bi.bi-box-arrow-in-right.me-2
+                | Ingresar
+
+          .card-footer.text-center.py-3.bg-light
+            span.text-muted ¿No tenés cuenta?
+            a.ms-1(href='/registro') Registrate

@@ -1,57 +1,125 @@
-html
-  head
-    title Buscador - Fotaza
-  body
-    a(href='/home') ← Volver al inicio
-    h1 🔍 Buscador de publicaciones
+extends layout
 
+block content
+  .container.py-4
+
+    //- ─── Formulario de búsqueda ─────────────────────────
+    .card.shadow-sm.mb-4
+      .card-header.bg-dark.text-white
+        h5.mb-0
+          i.bi.bi-search.me-2
+          | Buscador de publicaciones
+      .card-body
+        form(method='GET' action='/buscar')
+          .row.g-3
+            .col-md-6
+              label.form-label(for='q') Título
+              input#q.form-control(
+                type='text'
+                name='q'
+                placeholder='Ej: Atardecer, Carolina...'
+                value=filtros.q || ''
+              )
+            .col-md-6
+              label.form-label(for='etiqueta') Etiqueta
+              input#etiqueta.form-control(
+                type='text'
+                name='etiqueta'
+                placeholder='Ej: naturaleza, viaje...'
+                value=filtros.etiqueta || ''
+              )
+            .col-md-4
+              label.form-label(for='autor') Autor
+              input#autor.form-control(
+                type='text'
+                name='autor'
+                placeholder='Nombre o apellido'
+                value=filtros.autor || ''
+              )
+            .col-md-4
+              label.form-label(for='licencia') Licencia
+              select#licencia.form-select(name='licencia')
+                option(value='') Todas
+                option(value='sin_copyright' selected=filtros.licencia === 'sin_copyright') 🌐 Sin copyright
+                option(value='copyright' selected=filtros.licencia === 'copyright') 🔒 Con copyright
+            .col-md-4
+              label.form-label(for='valoracion_min') Valoración mínima
+              select#valoracion_min.form-select(name='valoracion_min')
+                option(value='' selected=!filtros.valoracion_min) Cualquiera
+                option(value='1' selected=filtros.valoracion_min === '1') ⭐ 1+
+                option(value='2' selected=filtros.valoracion_min === '2') ⭐⭐ 2+
+                option(value='3' selected=filtros.valoracion_min === '3') ⭐⭐⭐ 3+
+                option(value='4' selected=filtros.valoracion_min === '4') ⭐⭐⭐⭐ 4+
+          .mt-3.d-flex.gap-2
+            button.btn.btn-primary(type='submit')
+              i.bi.bi-search.me-2
+              | Buscar
+            a.btn.btn-outline-secondary(href='/buscar') Limpiar filtros
+
+    //- ─── Resultados ─────────────────────────────────────
     if error
-      p(style='color:red') ❌ #{error}
-
-    form(method='GET' action='/buscar')
-      div
-        input(type='text' name='q' placeholder='Título de publicación' value=filtros.q || '')
-      div
-        input(type='text' name='etiqueta' placeholder='Etiqueta' value=filtros.etiqueta || '')
-      div
-        input(type='text' name='autor' placeholder='Nombre del autor' value=filtros.autor || '')
-      div
-        label Licencia
-        select(name='licencia')
-          option(value='') Todas
-          option(value='sin_copyright' selected=filtros.licencia === 'sin_copyright') Sin copyright
-          option(value='copyright' selected=filtros.licencia === 'copyright') Con copyright
-      div
-        label Valoración mínima
-        select(name='valoracion_min')
-          option(value='' selected=!filtros.valoracion_min) Cualquiera
-          option(value='1' selected=filtros.valoracion_min === '1') ⭐ 1+
-          option(value='2' selected=filtros.valoracion_min === '2') ⭐⭐ 2+
-          option(value='3' selected=filtros.valoracion_min === '3') ⭐⭐⭐ 3+
-          option(value='4' selected=filtros.valoracion_min === '4') ⭐⭐⭐⭐ 4+
-      div
-        button(type='submit') Buscar
-
-    hr
+      .alert.alert-danger= error
 
     if resultados && resultados.length > 0
-      p Se encontraron #{resultados.length} resultado(s)
-      each pub in resultados
-        div(style='border:1px solid #ccc; margin:10px; padding:10px')
-          h3= pub.titulo
-          if pub.foto
-            img(src=pub.foto width='200')
-          if pub.descripcion
-            p= pub.descripcion
-          p
-            | Autor: 
-            a(href=`/perfil/${pub.id_usuario}`) #{pub.nombre_autor} #{pub.apellido_autor}
-          p Licencia: #{pub.licencia}
-          if pub.etiquetas
-            p Etiquetas: #{pub.etiquetas}
-          p Promedio: #{parseFloat(pub.promedio || 0).toFixed(1)} ⭐ (#{pub.total_votos} votos)
+      p.text-muted.mb-3
+        i.bi.bi-check-circle.me-1
+        | Se encontraron #{resultados.length} publicación(es)
+
+      .row.row-cols-1.row-cols-md-3.g-4
+        each pub in resultados
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title= pub.titulo
+                p.small.text-muted.mb-1
+                  i.bi.bi-person.me-1
+                  a(href=`/perfil/${pub.id_usuario}`) #{pub.nombre_autor} #{pub.apellido_autor}
+                if pub.descripcion
+                  p.card-text.small.text-muted= pub.descripcion
+                if pub.etiquetas
+                  p.small.mb-2
+                    i.bi.bi-tags.me-1
+                    each tag in pub.etiquetas.split(', ')
+                      span.badge.bg-secondary.me-1= tag
+                .d-flex.align-items-center.gap-2
+                  span.badge.bg-warning.text-dark ⭐ #{parseFloat(pub.promedio || 0).toFixed(1)}
+                  span.text-muted.small (#{pub.total_votos || 0} votos)
+
+              //- ─── Imágenes de la publicación ───────────
+              if pub.imagenes && pub.imagenes.length > 0
+                each img in pub.imagenes
+                  .border-top.p-2
+                    img.img-fluid.rounded.mb-1(
+                      src=img.foto
+                      alt=pub.titulo
+                      style='width:100%;max-height:220px;object-fit:cover'
+                    )
+                    if img.licencia === 'copyright'
+                      span.badge.bg-danger 🔒 Copyright
+                    else
+                      span.badge.bg-success 🌐 Sin copyright
+
+                    //- ─── Votar ──────────────────────────
+                    if usuario
+                      form.d-flex.gap-2.mt-2(method='POST' action='/votar')
+                        input(type='hidden' name='id_imagen' value=img.id_imagen)
+                        input(type='hidden' name='redirect_to' value='/buscar')
+                        select.form-select.form-select-sm(name='valoracion' style='width:80px')
+                          option(value='1') 1 ⭐
+                          option(value='2') 2 ⭐
+                          option(value='3') 3 ⭐
+                          option(value='4') 4 ⭐
+                          option(value='5') 5 ⭐
+                        button.btn.btn-sm.btn-outline-warning(type='submit') Votar
+                    else
+                      p.text-muted.small.mt-1
+                        a(href='/login') Iniciá sesión
+                        |  para votar
+
     else
-      if filtros.q || filtros.etiqueta || filtros.autor || filtros.licencia || filtros.valoracion_min
-        p No se encontraron resultados.
-      else
-        p Ingresá algún filtro para buscar.
+      .text-center.py-5.text-muted
+        i.bi.bi-search.display-4.d-block.mb-2
+        if filtros.q || filtros.etiqueta || filtros.autor || filtros.licencia || filtros.valoracion_min
+          p No se encontraron resultados para los filtros aplicados.
+        else
+          p Ingresá algún filtro para buscar publicaciones.

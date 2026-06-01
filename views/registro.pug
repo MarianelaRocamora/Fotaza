@@ -1,30 +1,100 @@
-html
-  head
-    title Registro - Fotaza
-  body
-    h1 Crear cuenta
-    if error
-      p(style='color:red')= error
-    form(method='POST' action='/registro')
-      input(type='text' name='nombre' placeholder='Nombre' required)
-      br
-      input(type='text' name='apellido' placeholder='Apellido' required)
-      br
-      input(type='email' name='correo' placeholder='Correo' required)
-      br
-      input(type='password' name='contrasena' placeholder='Contraseña' required)
-      br
-      select(name='sexo')
-        option(value='') Seleccionar sexo
-        option(value='M') Masculino
-        option(value='F') Femenino
-        option(value='O') Otro
-      br
-      label Fecha de nacimiento
-      input(type='date' name='fecha_nacimiento')
-      br
-      textarea(name='bio' placeholder='Biografía (opcional)' rows='3')
-      br
-      button(type='submit') Registrarse
-    br
-    a(href='/login') ¿Ya tenés cuenta? Iniciá sesión
+extends layout
+
+block content
+  .container.py-5
+    .row.justify-content-center
+      .col-md-7.col-lg-6
+
+        .card.shadow-sm
+          .card-header.bg-dark.text-white.text-center.py-3
+            h4.mb-0
+              i.bi.bi-camera-fill.me-2
+              | Fotaza
+          .card-body.p-4
+
+            if error
+              .alert.alert-danger.d-flex.align-items-center.gap-2
+                i.bi.bi-exclamation-triangle-fill
+                span= error
+
+            h5.card-title.text-center.mb-4 Crear cuenta
+
+            form(method='POST' action='/registro')
+
+              .row.g-3
+                .col-md-6
+                  label.form-label(for='nombre')
+                    | Nombre
+                    span.text-danger  *
+                  input#nombre.form-control(
+                    type='text'
+                    name='nombre'
+                    placeholder='Tu nombre'
+                    required
+                  )
+                .col-md-6
+                  label.form-label(for='apellido')
+                    | Apellido
+                    span.text-danger  *
+                  input#apellido.form-control(
+                    type='text'
+                    name='apellido'
+                    placeholder='Tu apellido'
+                    required
+                  )
+
+              .mb-3.mt-3
+                label.form-label(for='correo')
+                  | Correo electrónico
+                  span.text-danger  *
+                input#correo.form-control(
+                  type='email'
+                  name='correo'
+                  placeholder='tu@correo.com'
+                  required
+                )
+
+              .mb-3
+                label.form-label(for='contrasena')
+                  | Contraseña
+                  span.text-danger  *
+                input#contrasena.form-control(
+                  type='password'
+                  name='contrasena'
+                  placeholder='Mínimo 6 caracteres'
+                  required
+                )
+
+              .row.g-3.mb-3
+                .col-md-6
+                  label.form-label(for='sexo') Sexo
+                  select#sexo.form-select(name='sexo')
+                    option(value='') Seleccionar
+                    option(value='M') Masculino
+                    option(value='F') Femenino
+                    option(value='O') Otro
+
+                .col-md-6
+                  label.form-label(for='fecha_nacimiento') Fecha de nacimiento
+                  input#fecha_nacimiento.form-control(
+                    type='date'
+                    name='fecha_nacimiento'
+                  )
+
+              .mb-4
+                label.form-label(for='bio')
+                  | Biografía
+                  span.text-muted.small.ms-1 (opcional)
+                textarea#bio.form-control(
+                  name='bio'
+                  rows='3'
+                  placeholder='Contá algo sobre vos...'
+                )
+
+              button.btn.btn-primary.w-100(type='submit')
+                i.bi.bi-person-plus.me-2
+                | Registrarse
+
+          .card-footer.text-center.py-3.bg-light
+            span.text-muted ¿Ya tenés cuenta?
+            a.ms-1(href='/login') Iniciá sesión

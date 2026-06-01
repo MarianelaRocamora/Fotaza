@@ -24,7 +24,7 @@ async function init() {
         console.log('✅ Conexión establecida.');
 
         console.log('🔄 Sincronizando modelos (ALTER)...');
-        await sequelize.sync({ alter: true });
+        await sequelize.sync({ force: false });
         console.log('✅ Tablas sincronizadas.');
 
         // ─── Usuarios de prueba ──────────────────────────────
