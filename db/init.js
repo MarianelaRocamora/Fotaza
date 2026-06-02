@@ -25,6 +25,13 @@ async function init() {
 
         console.log('🔄 Sincronizando modelos (ALTER)...');
         await sequelize.sync({ force: false });
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS publicacion_etiqueta (
+                id_publicacion INTEGER NOT NULL REFERENCES publicacion(id_publicacion) ON DELETE CASCADE,
+                id_etiqueta    INTEGER NOT NULL REFERENCES etiqueta(id_etiqueta) ON DELETE CASCADE,
+                PRIMARY KEY (id_publicacion, id_etiqueta)
+            )
+        `);
         console.log('✅ Tablas sincronizadas.');
 
         // ─── Usuarios de prueba ──────────────────────────────
