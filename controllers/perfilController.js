@@ -23,7 +23,6 @@ const agregarComentariosAImagenes = async (imagenes) => {
 
 // ─── Helper: armar publicaciones con imágenes agrupadas ──
 const armarPublicaciones = async (idCreador) => {
-    // 1. Traer publicaciones con etiquetas y votos promediados
     const pubs = await sequelize.query(`
         SELECT 
             p.id_publicacion, p.titulo, p.descripcion, p.fecha_publicacion,
@@ -42,7 +41,6 @@ const armarPublicaciones = async (idCreador) => {
 
     if (!pubs.length) return [];
 
-    // 2. Para cada publicación, traer sus imágenes con comentarios
     const pubsCompletas = await Promise.all(pubs.map(async (pub) => {
         const imagenes = await Imagen.findAll({
             where: { id_publicacion: pub.id_publicacion },
@@ -69,8 +67,26 @@ const verPerfil = async (req, res) => {
 
         const publicaciones = await armarPublicaciones(idPerfil);
 
+        // ─── Conteos ─────────────────────────────────────
         const totalSeguidores = await UsuarioSeguidor.count({ where: { id_usuario: idPerfil } });
-        const totalSeguidos = await UsuarioSeguidor.count({ where: { id_seguidor: idPerfil } });
+        const totalSeguidos   = await UsuarioSeguidor.count({ where: { id_seguidor: idPerfil } });
+
+        // ─── Listas con nombre y apellido para mostrar ───
+        const listaSeguidores = await sequelize.query(`
+            SELECT u.id_usuario, u.nombre, u.apellido
+            FROM usuario_seguidor us
+            JOIN usuario u ON u.id_usuario = us.id_seguidor
+            WHERE us.id_usuario = :idPerfil
+            ORDER BY u.nombre ASC
+        `, { replacements: { idPerfil }, type: QueryTypes.SELECT });
+
+        const listaSeguidos = await sequelize.query(`
+            SELECT u.id_usuario, u.nombre, u.apellido
+            FROM usuario_seguidor us
+            JOIN usuario u ON u.id_usuario = us.id_usuario
+            WHERE us.id_seguidor = :idPerfil
+            ORDER BY u.nombre ASC
+        `, { replacements: { idPerfil }, type: QueryTypes.SELECT });
 
         const yaSigue = idSesion ? await UsuarioSeguidor.findOne({
             where: { id_usuario: idPerfil, id_seguidor: idSesion }
@@ -84,6 +100,8 @@ const verPerfil = async (req, res) => {
             publicaciones,
             totalSeguidores,
             totalSeguidos,
+            listaSeguidores,
+            listaSeguidos,
             yaSigue: !!yaSigue,
             esPropioPerfil
         });
@@ -96,7 +114,7 @@ const verPerfil = async (req, res) => {
 
 // ─── Seguir usuario ──────────────────────────────────────
 const seguir = async (req, res) => {
-    const idUsuario = parseInt(req.params.id, 10);
+    const idUsuario  = parseInt(req.params.id, 10);
     const idSeguidor = parseInt(req.session.usuario.id, 10);
 
     if (idUsuario === idSeguidor)
@@ -119,7 +137,7 @@ const seguir = async (req, res) => {
 
 // ─── Dejar de seguir ─────────────────────────────────────
 const dejarDeSeguir = async (req, res) => {
-    const idUsuario = parseInt(req.params.id, 10);
+    const idUsuario  = parseInt(req.params.id, 10);
     const idSeguidor = parseInt(req.session.usuario.id, 10);
 
     try {

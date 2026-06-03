@@ -27,13 +27,29 @@ block content
             h3.mb-0= `${perfil.nombre} ${perfil.apellido}`
             if perfil.bio
               p.text-muted.mb-1.small= perfil.bio
-            .d-flex.gap-3.mt-1
-              span.badge.bg-light.text-dark.border
+
+            //- ─── Badges clicables seguidores / seguidos ─
+            .d-flex.gap-3.mt-2.flex-wrap
+
+              //- Seguidores
+              button.badge.bg-light.text-dark.border.btn.btn-sm(
+                type='button'
+                data-bs-toggle='collapse'
+                data-bs-target='#listaSeguidores'
+                aria-expanded='false'
+              )
                 i.bi.bi-people.me-1
-                | #{totalSeguidores} seguidores
-              span.badge.bg-light.text-dark.border
+                | #{parseInt(totalSeguidores)} seguidores
+
+              //- Seguidos
+              button.badge.bg-light.text-dark.border.btn.btn-sm(
+                type='button'
+                data-bs-toggle='collapse'
+                data-bs-target='#listaSeguidos'
+                aria-expanded='false'
+              )
                 i.bi.bi-person-check.me-1
-                | Siguiendo #{totalSeguidos}
+                | Siguiendo #{parseInt(totalSeguidos)}
 
           if !esPropioPerfil && usuario
             .ms-auto
@@ -47,6 +63,36 @@ block content
                   button.btn.btn-primary(type='submit')
                     i.bi.bi-person-plus.me-1
                     | Seguir
+
+        //- ─── Lista colapsable: Seguidores ───────────────
+        .collapse.mt-3#listaSeguidores
+          .border-top.pt-3
+            h6.text-muted.mb-2
+              i.bi.bi-people.me-1
+              | Seguidores
+            if listaSeguidores && listaSeguidores.length > 0
+              .d-flex.flex-wrap.gap-2
+                each u in listaSeguidores
+                  a.badge.bg-secondary.text-decoration-none(href=`/perfil/${u.id_usuario}`)
+                    i.bi.bi-person.me-1
+                    | #{u.nombre} #{u.apellido}
+            else
+              p.text-muted.small.mb-0 Ningún seguidor aún.
+
+        //- ─── Lista colapsable: Seguidos ─────────────────
+        .collapse.mt-3#listaSeguidos
+          .border-top.pt-3
+            h6.text-muted.mb-2
+              i.bi.bi-person-check.me-1
+              | Siguiendo a
+            if listaSeguidos && listaSeguidos.length > 0
+              .d-flex.flex-wrap.gap-2
+                each u in listaSeguidos
+                  a.badge.bg-primary.text-decoration-none(href=`/perfil/${u.id_usuario}`)
+                    i.bi.bi-person.me-1
+                    | #{u.nombre} #{u.apellido}
+            else
+              p.text-muted.small.mb-0 No seguís a nadie aún.
 
     //- ─── Publicaciones ──────────────────────────────────
     .d-flex.justify-content-between.align-items-center.mb-3
@@ -70,18 +116,15 @@ block content
 
           .card-body
 
-            //- ─── Descripción ────────────────────────
             if pub.descripcion
               p.text-muted= pub.descripcion
 
-            //- ─── Etiquetas ──────────────────────────
             if pub.etiquetas
               p.mb-2
                 i.bi.bi-tags.me-1
                 each tag in pub.etiquetas.split(', ')
                   span.badge.bg-secondary.me-1= tag
 
-            //- ─── Imágenes de la publicación ─────────
             if pub.imagenes && pub.imagenes.length > 0
               .row.g-3.mb-3
                 each img in pub.imagenes
@@ -102,7 +145,6 @@ block content
                         else
                           span.badge.bg-success.w-100.text-center 🌐 Sin copyright
 
-                      //- ─── Votar (solo si no es propio perfil) ───
                       if usuario && !esPropioPerfil
                         .card-footer.py-2
                           form.d-flex.gap-2(method='POST' action='/votar')
@@ -116,7 +158,6 @@ block content
                               option(value='5') 5 ⭐
                             button.btn.btn-sm.btn-outline-warning(type='submit') Votar
 
-                      //- ─── Comentarios por imagen ────────────────
                       .card-footer
                         .d-flex.justify-content-between.align-items-center.mb-2
                           h6.mb-0
