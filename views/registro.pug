@@ -63,7 +63,24 @@ block content
                   name='contrasena'
                   placeholder='Mínimo 6 caracteres'
                   required
+                  minlength='6'
                 )
+                .form-text.text-muted
+                  i.bi.bi-info-circle.me-1
+                  | La contraseña debe tener al menos 6 caracteres.
+
+              .mb-3
+                label.form-label(for='confirmar')
+                  | Confirmar contraseña
+                  span.text-danger  *
+                input#confirmar.form-control(
+                  type='password'
+                  name='confirmar'
+                  placeholder='Repetí tu contraseña'
+                  required
+                  minlength='6'
+                )
+                #mensajeConfirmar.form-text
 
               .row.g-3.mb-3
                 .col-md-6
@@ -91,10 +108,41 @@ block content
                   placeholder='Contá algo sobre vos...'
                 )
 
-              button.btn.btn-primary.w-100(type='submit')
+              button#btnRegistrar.btn.btn-primary.w-100(type='submit')
                 i.bi.bi-person-plus.me-2
                 | Registrarse
 
           .card-footer.text-center.py-3.bg-light
             span.text-muted ¿Ya tenés cuenta?
             a.ms-1(href='/login') Iniciá sesión
+
+  script.
+    const contrasena  = document.getElementById('contrasena');
+    const confirmar   = document.getElementById('confirmar');
+    const mensaje     = document.getElementById('mensajeConfirmar');
+    const btn         = document.getElementById('btnRegistrar');
+
+    function validar() {
+      if (confirmar.value === '') {
+        mensaje.textContent = '';
+        btn.disabled = false;
+        return;
+      }
+      if (contrasena.value.length < 6) {
+        mensaje.textContent = '';
+        btn.disabled = true;
+        return;
+      }
+      if (contrasena.value !== confirmar.value) {
+        mensaje.textContent = '⚠️ Las contraseñas no coinciden.';
+        mensaje.className = 'form-text text-danger';
+        btn.disabled = true;
+      } else {
+        mensaje.textContent = '✅ Las contraseñas coinciden.';
+        mensaje.className = 'form-text text-success';
+        btn.disabled = false;
+      }
+    }
+
+    contrasena.addEventListener('input', validar);
+    confirmar.addEventListener('input', validar);

@@ -10,7 +10,19 @@ const mostrarRegistro = (req, res) => {
 };
 
 const registrar = async (req, res) => {
-    const { nombre, apellido, correo, contrasena, sexo, fecha_nacimiento, bio } = req.body;
+    const { nombre, apellido, correo, contrasena, confirmar, sexo, fecha_nacimiento, bio } = req.body;
+
+    // ─── Validaciones ────────────────────────────────────
+    if (!contrasena || contrasena.trim() === '') {
+        return res.render('registro', { error: 'La contraseña es obligatoria' });
+    }
+    if (contrasena.length < 6) {
+        return res.render('registro', { error: 'La contraseña debe tener al menos 6 caracteres' });
+    }
+    if (confirmar && contrasena !== confirmar) {
+        return res.render('registro', { error: 'Las contraseñas no coinciden' });
+    }
+
     try {
         const existe = await Usuario.findOne({ where: { correo } });
         if (existe) {
