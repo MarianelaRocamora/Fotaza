@@ -19,9 +19,6 @@ const registrar = async (req, res) => {
     if (contrasena.length < 6) {
         return res.render('registro', { error: 'La contraseña debe tener al menos 6 caracteres' });
     }
-    if (confirmar && contrasena !== confirmar) {
-        return res.render('registro', { error: 'Las contraseñas no coinciden' });
-    }
 
     try {
         const existe = await Usuario.findOne({ where: { correo } });
