@@ -2,6 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { votar } = require('../controllers/votoController');
 
-router.post('/', votar);  // era /votar, ahora solo /
+router.post('/', votar);  
 
 module.exports = router;
