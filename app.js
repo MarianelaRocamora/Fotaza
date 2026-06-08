@@ -19,7 +19,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'fotaza2secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
 // ─── Middleware de autenticación ──────────────────────────
@@ -35,17 +35,16 @@ const busquedaRoutes    = require('./routes/busqueda');
 const imagenRoutes      = require('./routes/imagen');
 const { manejarErrorMulter } = require('./controllers/publicacionController');
 
-// ─── Rutas públicas (anónimos permitidos) ─────────────────
-app.use('/', authRoutes);       // login, registro, logout, home
-app.use('/', imagenRoutes);     // ver imágenes
-app.use('/', busquedaRoutes);   // buscar publicaciones
+// ─── Rutas públicas ───────────────────────────────────────
+app.use('/', authRoutes);
+app.use('/', imagenRoutes);
+app.use('/', busquedaRoutes);
 app.use('/', perfilRoutes);
 
-// ─── Rutas protegidas (solo usuarios registrados) ─────────
+// ─── Rutas protegidas ─────────────────────────────────────
 app.use('/publicacion', soloRegistrados, publicacionRoutes);
 app.use('/votar',       soloRegistrados, votoRoutes);
 app.use('/comentar',    soloRegistrados, comentarioRoutes);
-
 
 // ─── Manejo de errores de Multer ──────────────────────────
 app.use(manejarErrorMulter);
@@ -67,3 +66,5 @@ sequelize.authenticate()
     .catch(err => {
         console.error('Error conectando a la BD:', err);
     });
+
+module.exports = app;
