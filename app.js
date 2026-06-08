@@ -59,7 +59,7 @@ const PORT = process.env.PORT || 3000;
 sequelize.authenticate()
     .then(() => {
         console.log('Conectado a PostgreSQL ✅');
-        app.listen(PORT, () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log(`Servidor en http://localhost:${PORT}`);
         });
     })
