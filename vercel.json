@@ -1,22 +1,15 @@
 {
     "version": 2,
-    "git": {
-        "deploymentEnabled": {
-            "main" : false
-        }
-        
-    },
-
+    "installCommand": "npm install",
     "builds": [
         {
             "src": "app.js",
             "use": "@vercel/node",
             "config": {
-                "includeFiles": ["views/**", "public/**"]
+                "includeFiles": ["views/**", "public/**", "node_modules/pg/**", "node_modules/pg-hstore/**"]
             }
         }
     ],
-
     "routes": [
         { "src": "(.*)", "dest": "app.js" }
     ]
