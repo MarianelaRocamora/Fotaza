@@ -1,6 +1,6 @@
 const Usuario = require('./Usuario');
 const Publicacion = require('./Publicacion');
-const Etiqueta = require('./Etiqueta');
+const Etiqueta = require('./etiqueta');
 const Imagen = require('./Imagen');
 const Voto = require('./Voto');
 const Comentario = require('./Comentario');
