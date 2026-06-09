@@ -1,6 +1,6 @@
 const Publicacion = require('../models/Publicacion');
 const Imagen = require('../models/Imagen');
-const Etiqueta = require('../models/Etiqueta');
+const Etiqueta = require('../models/etiqueta');
 const sequelize = require('../db/sequelize');
 const multer = require('multer');
 const path = require('path');
