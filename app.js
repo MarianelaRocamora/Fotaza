@@ -1,6 +1,7 @@
 global.pg = require('pg');
 const express = require('express');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const path = require('path');
 const sequelize = require('./db/sequelize');
 require('dotenv').config();
@@ -17,10 +18,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
+    store: new pgSession({
+        conString: process.env.DATABASE_URL,
+        tableName: 'session'
+    }),
     secret: process.env.SESSION_SECRET || 'fotaza2secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    cookie: { secure: false }
 }));
 
 // ─── Middleware de autenticación ──────────────────────────
