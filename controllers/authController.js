@@ -4,6 +4,7 @@ const { QueryTypes } = require('sequelize');
 const sequelize = require('../db/sequelize');
 const Comentario = require('../models/Comentario');
 const Imagen = require('../models/Imagen');
+const { imagenesASrc } = require('../utils/imagenHelper');
 
 const mostrarRegistro = (req, res) => {
     res.render('registro');
@@ -116,11 +117,11 @@ const queryPublicaciones = async (extraWhere = '', having = '', params = {}, sol
     if (!pubs.length) return [];
 
     const pubsCompletas = await Promise.all(pubs.map(async (pub) => {
-        const imagenes = await Imagen.findAll({
+        const imagenesRaw = await Imagen.findAll({
             where: { id_publicacion: pub.id_publicacion },
-            order: [['fecha_subida', 'ASC']],
-            raw: true
+            order: [['fecha_subida', 'ASC']]
         });
+        const imagenes = imagenesASrc(imagenesRaw);
         const imagenesConComentarios = await agregarComentariosAImagenes(imagenes);
         return { ...pub, imagenes: imagenesConComentarios };
     }));
