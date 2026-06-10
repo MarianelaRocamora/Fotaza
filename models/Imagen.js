@@ -11,10 +11,12 @@ const Imagen = sequelize.define('imagen', {
         type: DataTypes.STRING(255),
         allowNull: false
     },
+    datos: {
+        type: DataTypes.BLOB,
+        allowNull: true
+    },
     ancho: DataTypes.INTEGER,
-
     altura: DataTypes.INTEGER,
-
     licencia: {
         type: DataTypes.STRING(20),
         defaultValue: 'sin_copyright',
@@ -25,7 +27,6 @@ const Imagen = sequelize.define('imagen', {
         defaultValue: false
     },
     texto_marca: DataTypes.STRING(200),
-
     fecha_subida: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
@@ -35,8 +36,8 @@ const Imagen = sequelize.define('imagen', {
         defaultValue: 'activo'
     },
     comentario_clausurado: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
     id_publicacion: {
         type: DataTypes.INTEGER,

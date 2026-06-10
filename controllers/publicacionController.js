@@ -6,16 +6,8 @@ const multer = require('multer');
 const path = require('path');
 const sharp = require('sharp');
 
-// ─── Multer ──────────────────────────────────────────────
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads/');
-    },
-    filename: (req, file, cb) => {
-        const nombre = Date.now() + path.extname(file.originalname);
-        cb(null, nombre);
-    }
-});
+// ─── Multer en memoria ────────────────────────────────────
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     const tiposPermitidos = /jpeg|jpg|png|gif|webp/;
@@ -62,6 +54,18 @@ const mostrarFormulario = (req, res) => {
     res.render('publicacion/nueva', { usuario: req.session.usuario });
 };
 
+// ─── Helper: construir src base64 desde imagen ───────────
+const construirSrc = (imagen) => {
+    if (!imagen.datos) return imagen.foto;
+    const buffer = Buffer.isBuffer(imagen.datos)
+        ? imagen.datos
+        : Buffer.from(imagen.datos);
+    const mimeType = imagen.foto && imagen.foto.startsWith('data:')
+        ? imagen.foto.split(';')[0].replace('data:', '')
+        : 'image/jpeg';
+    return `data:${mimeType};base64,${buffer.toString('base64')}`;
+};
+
 // ─── Crear publicacion ───────────────────────────────────
 const crearPublicacion = async (req, res) => {
     if (!req.session.usuario) return res.redirect('/login');
@@ -74,20 +78,12 @@ const crearPublicacion = async (req, res) => {
         valores: { titulo, descripcion, etiquetas, licencia, texto_marca }
     });
 
-    if (!titulo || titulo.trim() === '') {
-        return renderError('El título es obligatorio');
-    }
-    if (!req.files || req.files.length === 0) {
-        return renderError('Debés subir al menos una imagen (jpg, png, gif, webp)');
-    }
-    if (!etiquetas || etiquetas.trim() === '') {
-        return renderError('Debés ingresar al menos una etiqueta');
-    }
+    if (!titulo || titulo.trim() === '') return renderError('El título es obligatorio');
+    if (!req.files || req.files.length === 0) return renderError('Debés subir al menos una imagen (jpg, png, gif, webp)');
+    if (!etiquetas || etiquetas.trim() === '') return renderError('Debés ingresar al menos una etiqueta');
 
     const tags = etiquetas.split(',').map(t => t.trim().toLowerCase()).filter(t => t !== '');
-    if (tags.length === 0) {
-        return renderError('Debés ingresar al menos una etiqueta válida');
-    }
+    if (tags.length === 0) return renderError('Debés ingresar al menos una etiqueta válida');
 
     try {
         const publicacion = await Publicacion.create({
@@ -97,36 +93,28 @@ const crearPublicacion = async (req, res) => {
         });
 
         for (const file of req.files) {
-            const metadata = await sharp(file.path).metadata();
-
-            let rutaFinal = '/uploads/' + file.filename;
+            let buffer = file.buffer;
+            const metadata = await sharp(buffer).metadata();
+            const mimeType = file.mimetype;
 
             // ─── Marca de agua con Sharp ─────────────────
             if (licencia === 'copyright' && marca_de_agua === 'true' && texto_marca) {
-                const texto = texto_marca.trim();
                 const svgMarca = Buffer.from(`
                     <svg width="${metadata.width}" height="${metadata.height}">
-                        <text
-                            x="50%" y="90%"
-                            text-anchor="middle"
-                            font-size="36"
-                            font-family="Arial"
-                            fill="rgba(255,255,255,0.65)"
-                            stroke="rgba(0,0,0,0.3)"
-                            stroke-width="1"
-                        >${texto}</text>
+                        <text x="50%" y="90%" text-anchor="middle" font-size="36"
+                            font-family="Arial" fill="rgba(255,255,255,0.65)"
+                            stroke="rgba(0,0,0,0.3)" stroke-width="1"
+                        >${texto_marca.trim()}</text>
                     </svg>
                 `);
-                const nombreMarca = 'wm_' + file.filename;
-                const rutaSalida = path.join('public/uploads/', nombreMarca);
-                await sharp(file.path)
+                buffer = await sharp(buffer)
                     .composite([{ input: svgMarca, top: 0, left: 0 }])
-                    .toFile(rutaSalida);
-                rutaFinal = '/uploads/' + nombreMarca;
+                    .toBuffer();
             }
 
             await Imagen.create({
-                foto: rutaFinal,
+                foto: mimeType,          
+                datos: buffer,           
                 ancho: metadata.width,
                 altura: metadata.height,
                 licencia: licencia || 'sin_copyright',
@@ -152,4 +140,4 @@ const crearPublicacion = async (req, res) => {
     }
 };
 
-module.exports = { mostrarFormulario, crearPublicacion, upload, manejarErrorMulter };
+module.exports = { mostrarFormulario, crearPublicacion, upload, manejarErrorMulter, construirSrc };

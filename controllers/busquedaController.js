@@ -1,6 +1,7 @@
 const { QueryTypes } = require('sequelize');
 const sequelize = require('../db/sequelize');
 const Imagen = require('../models/Imagen');
+const { imagenesASrc } = require('../utils/imagenHelper');
 
 const buscar = async (req, res) => {
     const { q, etiqueta, autor, licencia, valoracion_min } = req.query;
@@ -71,12 +72,11 @@ const buscar = async (req, res) => {
 
         // ─── Agregar imágenes a cada publicación ─────────
         const resultados = await Promise.all(pubs.map(async (pub) => {
-            const imagenes = await Imagen.findAll({
+            const imagenesRaw = await Imagen.findAll({
                 where: { id_publicacion: pub.id_publicacion },
-                order: [['fecha_subida', 'ASC']],
-                raw: true
+                order: [['fecha_subida', 'ASC']]
             });
-            return { ...pub, imagenes };
+            return { ...pub, imagenes: imagenesASrc(imagenesRaw) };
         }));
 
         res.render('busqueda', {

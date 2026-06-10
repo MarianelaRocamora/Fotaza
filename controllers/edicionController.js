@@ -31,7 +31,17 @@ const mostrarEditar = async (req, res) => {
             return res.redirect(`/perfil/${idUsuario}?error=No podés editar una publicación con denuncias`);
         }
 
-        const imagenes = await Imagen.findAll({ where: { id_publicacion: idPublicacion } });
+        const imagenesRaw = await Imagen.findAll({ where: { id_publicacion: idPublicacion } });
+        const imagenes = imagenesRaw.map(img => {
+            const obj = img.toJSON();
+            if (obj.datos) {
+                const buf = Buffer.isBuffer(obj.datos) ? obj.datos : Buffer.from(obj.datos);
+                obj.src = `data:${obj.foto};base64,${buf.toString('base64')}`;
+            } else {
+                obj.src = obj.foto;
+            }
+            return obj;
+        });
 
         const etiquetas = await sequelize.query(`
             SELECT e.nombre_etiqueta FROM etiqueta e
@@ -65,9 +75,7 @@ const editarPublicacion = async (req, res) => {
             where: { id_publicacion: idPublicacion, id_creador: idUsuario }
         });
 
-        if (!publicacion) {
-            return res.redirect('/home?error=No tenés permiso');
-        }
+        if (!publicacion) return res.redirect('/home?error=No tenés permiso');
 
         const tieneDenuncias = await sequelize.query(`
             SELECT COUNT(*) as total FROM denuncia d
@@ -92,9 +100,26 @@ const editarPublicacion = async (req, res) => {
             }
 
             for (const file of req.files) {
-                const metadata = await sharp(file.path).metadata();
+                let buffer = file.buffer;
+                const metadata = await sharp(buffer).metadata();
+
+                if (licencia === 'copyright' && marca_de_agua === 'true' && texto_marca) {
+                    const svgMarca = Buffer.from(`
+                        <svg width="${metadata.width}" height="${metadata.height}">
+                            <text x="50%" y="90%" text-anchor="middle" font-size="36"
+                                font-family="Arial" fill="rgba(255,255,255,0.65)"
+                                stroke="rgba(0,0,0,0.3)" stroke-width="1"
+                            >${texto_marca.trim()}</text>
+                        </svg>
+                    `);
+                    buffer = await sharp(buffer)
+                        .composite([{ input: svgMarca, top: 0, left: 0 }])
+                        .toBuffer();
+                }
+
                 await Imagen.create({
-                    foto: '/uploads/' + file.filename,
+                    foto: file.mimetype,
+                    datos: buffer,
                     ancho: metadata.width,
                     altura: metadata.height,
                     licencia: licencia || 'sin_copyright',
