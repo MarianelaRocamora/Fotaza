@@ -25,11 +25,9 @@ npm install
 
 # 3. Configurar variables de entorno
 cp .env.example .env
-# Editá .env con tus datos:
 #   DATABASE_URL=postgresql://TU_USUARIO:TU_PASSWORD@localhost:5432/fotaza
 #   PORT=3000
 #   SESSION_SECRET=cualquier_string_secreto
-# Asegurate que la base de datos exista: createdb fotaza
 
 # 4. Inicializar tablas y datos de prueba
 npm run db:init
